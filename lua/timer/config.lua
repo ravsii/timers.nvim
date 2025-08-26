@@ -1,0 +1,2 @@
+---@class Config
+---@field test string desc
