@@ -1,21 +1,21 @@
+local unit = require('timer.unit')
 ---@class Duration
 ---@field value integer Duration in milliseconds
 local Duration = {}
 Duration.__index = Duration
 
-Duration.MILLISECOND = 1
-Duration.SECOND = Duration.MILLISECOND * 1000
-Duration.MINUTE = Duration.SECOND * 60
-Duration.HOUR = Duration.MINUTE * 60
-
 ---Create a new Duration object
 ---@param ms? integer duration in milliseconds (default: 0)
 ---@return Duration
-function Duration.new(ms) return setmetatable({ value = ms or 0 }, Duration) end
+function Duration.from(ms) return setmetatable({ value = ms or 0 }, Duration) end
 
 ---Return value in milliseconds
 ---@return integer ms milliseconds, suitable for lua functions
 function Duration:asMilliseconds() return self.value end
+
+---Return value in seconds
+---@return integer seconds
+function Duration:asSeconds() return self.value / unit.SECOND end
 
 ---Parse a duration string into a Duration object.
 ---
@@ -37,7 +37,7 @@ function Duration:asMilliseconds() return self.value end
 ---
 ---@param str string Go's time.Duration-like format
 ---@return Duration
-function Duration.parse(str)
+function Duration.parse_format(str)
   local self = setmetatable({ value = 0 }, Duration)
 
   local result = 0
@@ -53,9 +53,9 @@ function Duration.parse(str)
     end
   end
 
-  local function addUnit(unit)
+  local function addTimeUnit(timeUnit)
     local total = curNum + (fracNum / fracDiv)
-    result = result + total * unit
+    result = result + total * timeUnit
     -- reset state
     curNum, fracNum, fracDiv, inFraction = 0, 0, 1, false
   end
@@ -72,17 +72,44 @@ function Duration.parse(str)
     ['8'] = function() addNum(8) end,
     ['9'] = function() addNum(9) end,
     ['.'] = function() inFraction = true end,
-    ['s'] = function() addUnit(self.SECOND) end,
-    ['m'] = function() addUnit(self.MINUTE) end,
-    ['h'] = function() addUnit(self.HOUR) end,
+    ['s'] = function() addTimeUnit(unit.SECOND) end,
+    ['m'] = function() addTimeUnit(unit.MINUTE) end,
+    ['h'] = function() addTimeUnit(unit.HOUR) end,
   }
 
   for c in str:gmatch('.') do
     (cases[c] or function() error('Unexpected char: ' .. c) end)()
   end
 
+  addTimeUnit(unit.MILLISECOND)
+
   self.value = result
   return self
+end
+
+--- Returns a human-readable duration string.
+--- Formats based on the duration length:
+--- - `hh:mm:ss` for durations of 1 hour or more
+--- - `mm:ss` / `m:ss` for durations between 1 minute and 1 hour. ss is a
+--- number
+--- - `xxs` / `xs` for durations less than 1 minute. x is a number and s
+--- represends seconds
+---@return string? duration
+function Duration:into_hms()
+  local seconds = self:asSeconds()
+  local h = math.floor(seconds / 3600)
+  local m = math.floor((seconds % 3600) / 60)
+  local s = seconds % 60
+
+  if h > 0 then
+    return string.format('%02d:%02d:%02d', h, m, s)
+  elseif m > 0 then
+    return string.format('%d:%02d', m, s)
+  elseif s > 0 then
+    return string.format('%ds', s)
+  else
+    return nil
+  end
 end
 
 return Duration

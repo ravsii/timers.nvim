@@ -1,0 +1,8 @@
+local M = {}
+
+M.MILLISECOND = 1
+M.SECOND = M.MILLISECOND * 1000
+M.MINUTE = M.SECOND * 60
+M.HOUR = M.MINUTE * 60
+
+return M
