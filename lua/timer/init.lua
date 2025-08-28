@@ -107,8 +107,15 @@ function M.save_state()
     return
   end
 
+  local dir = vim.fn.fnamemodify(state_file, ':h')
+  vim.fn.mkdir(dir, 'p')
+  local f = io.open(state_file, 'a') -- "a" = append or create
+  if f then
+    f:close()
+  end
+
   local data = vim.fn.json_encode(M.active_timers)
-  vim.fn.writefile(data, state_file)
+  vim.fn.writefile({ data }, state_file)
 end
 
 function M.load_state()
