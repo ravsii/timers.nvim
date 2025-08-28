@@ -2,11 +2,10 @@ local Duration = require('timer.duration')
 local Unit = require('timer.unit')
 
 ---@class Timer
----@field id integer
 ---@field message string
 ---@field created number  -- os.time()
 ---@field duration Duration
----@field callback fun()?
+---@field callback fun()? -- NOTE: not saved with persistent=true
 local Timer = {}
 Timer.__index = Timer
 
@@ -28,13 +27,6 @@ function Timer.new(duration, message, callback)
   }, Timer)
 
   return self
-end
-
-function Timer:cancel()
-  if self.id == -1 then
-    return
-  end
-  vim.fn.timer_stop(self.id)
 end
 
 ---Get remaining time in seconds

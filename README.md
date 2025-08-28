@@ -93,7 +93,7 @@ You can display the closest timer to expire** in `lualine`:
 
 ## API
 
-### Recepies
+### Recipes
 
 #### Pomodoro Timer with break
 

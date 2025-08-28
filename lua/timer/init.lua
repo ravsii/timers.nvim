@@ -3,11 +3,6 @@ local duration = require('timer.duration')
 local timers = require('timer.timer')
 local unit = require('timer.unit')
 
----@class FileTimerState
----@field message string
----@field created number  -- os.time()
----@field duration Duration
-
 local state_file = vim.fn.stdpath('data') .. '/timer.nvim/state.json'
 
 local COMMANDS = {
@@ -37,20 +32,32 @@ function M.setup(opts)
 end
 
 ---Starts a timer and tracks it in Manager.active_timers
----@see Timer.cancel
 ---@param t Timer Timer object to start
+---@return fun() cancel Cancel func that can be used to stop the timer
 function M.start_timer(t)
-  local id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
+  ---ID is created here, but assigned later. It's required for callbacks so we
+  ---have to do it this way.
+  ---@type integer
+  local id
+
+  local cancel_func = function()
+    M.active_timers[id] = nil
+    M.save_state()
+  end
+
+  id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
     vim.notify(t.message, vim.log.levels.INFO)
     if t.callback then
       t.callback()
     end
-    M.active_timers[t.id] = nil
+
+    cancel_func()
   end)
 
-  t.id = id
-  M.active_timers[t.id] = t
+  M.active_timers[id] = t
   M.save_state()
+
+  return cancel_func
 end
 
 ---@return Timer? timer First timer that's about to expire or nil, if there are
@@ -77,10 +84,11 @@ end
 
 --- Cancel all active timers
 function M.cancel_all()
-  for _, t in pairs(M.active_timers) do
-    t:cancel()
+  for id, _ in pairs(M.active_timers) do
+    vim.fn.timer_stop(id)
   end
   M.active_timers = {}
+  M.save_state()
 end
 
 function M.setup_user_commands()
@@ -120,12 +128,12 @@ function M.save_state()
   local dir = vim.fn.fnamemodify(state_file, ':h')
   vim.fn.mkdir(dir, 'p')
 
-  ---@type FileTimerState[]
+  ---@type Timer[]
   local saved = {}
 
   for _, t in pairs(M.active_timers) do
     table.insert(
-      saved, ---@type FileTimerState
+      saved, ---@type Timer
       {
         created = t.created,
         message = t.message,
@@ -147,7 +155,7 @@ function M.load_state()
     return
   end
 
-  ---@type FileTimerState[]
+  ---@type Timer[]
   local old_timers = vim.fn.json_decode(vim.fn.readfile(state_file))
   local cur_time = os.time()
 
