@@ -1,2 +1,11 @@
 ---@class Config
----@field test string desc
+---@field persistent boolean Save state across Neovim reloads
+
+local M = {}
+
+---@type Config
+M.defaults = {
+  persistent = false,
+}
+
+return M

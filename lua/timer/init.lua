@@ -1,3 +1,4 @@
+local config = require('timer.config')
 local duration = require('timer.duration')
 local timers = require('timer.timer')
 
@@ -12,10 +13,16 @@ local M = {
   -- Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them
   ---@type table<integer, Timer>
   active_timers = {},
+
+  ---@type Config
+  opts = config.defaults,
 }
 
 ---@param opts Config
-function M.setup(opts) M.setup_user_commands() end
+function M.setup(opts)
+  M.opts = vim.tbl_deep_extend('force', M.opts, opts or {})
+  M.setup_user_commands()
+end
 
 --- Starts a timer and tracks it in Manager.active_timers
 --- @param t Timer Timer object to start
