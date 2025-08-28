@@ -4,6 +4,13 @@
 **run, track, and manage multiple timers**. Its core focus is **extensibility**
 and providing a **clean API** for other plugins or custom configurations.
 
+> [!WARNING]
+>
+> **This library is in active development!**
+>
+> The API is unstable and may change at any time.
+> Breaking changes can occur between minor or patch versions.
+
 ## Installation
 
 Using `lazy.nvim`:
