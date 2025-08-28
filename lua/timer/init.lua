@@ -3,6 +3,11 @@ local duration = require('timer.duration')
 local timers = require('timer.timer')
 local unit = require('timer.unit')
 
+---@class FileTimerState
+---@field message string
+---@field created number  -- os.time()
+---@field duration Duration
+
 local state_file = vim.fn.stdpath('data') .. '/timer.nvim/state.json'
 
 local COMMANDS = {
@@ -115,7 +120,21 @@ function M.save_state()
   local dir = vim.fn.fnamemodify(state_file, ':h')
   vim.fn.mkdir(dir, 'p')
 
-  local data = vim.fn.json_encode(M.active_timers)
+  ---@type FileTimerState[]
+  local saved = {}
+
+  for _, t in pairs(M.active_timers) do
+    table.insert(
+      saved, ---@type FileTimerState
+      {
+        created = t.created,
+        message = t.message,
+        duration = t.duration,
+      }
+    )
+  end
+
+  local data = vim.fn.json_encode(saved)
   vim.fn.writefile({ data }, state_file)
 end
 
@@ -124,15 +143,20 @@ function M.load_state()
     return
   end
 
-  local data = vim.fn.readfile(state_file)
-  ---@type TimerTable
-  local old_timers = vim.fn.json_decode(data)
+  if vim.uv.fs_stat(state_file) == nil then
+    return
+  end
 
+  ---@type FileTimerState[]
+  local old_timers = vim.fn.json_decode(vim.fn.readfile(state_file))
   local cur_time = os.time()
 
-  for _, t in pairs(old_timers) do
-    local launch_diff_seconds = cur_time - t.created
-    t.duration = t.duration:sub(duration.from(launch_diff_seconds * unit.SECOND))
+  for _, t in ipairs(old_timers) do
+    local sub = duration.from((cur_time - t.created) * unit.SECOND)
+    local time_left = duration.from(t.duration.value):sub(sub)
+    if time_left.value > 0 then
+      M.start_timer(timers.new(time_left, t.message))
+    end
   end
 end
 
