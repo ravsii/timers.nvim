@@ -121,7 +121,7 @@ function M.setup_autocmds()
 end
 
 function M.save_state()
-  if not M.opts.persistent or M.active_timers_num() == 0 then
+  if not M.opts.persistent then
     return
   end
 
