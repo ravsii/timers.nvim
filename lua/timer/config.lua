@@ -1,5 +1,5 @@
 ---@class Config
----@field persistent boolean Save state across Neovim reloads
+---@field persistent? boolean Save state across Neovim reloads
 
 local M = {}
 
