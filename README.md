@@ -12,7 +12,16 @@ Using `lazy.nvim`:
 return {
   {
     'ravsii/timer.nvim',
-    opts = {}, -- no options for now
+    ---@module "timer.config"
+    ---@type Config
+    opts = {
+      -- Save timers across reloads / sessions.
+      -- If true, neovim will save your active timers on disk and load them
+      -- back after you enter it again.
+      -- Keep in mind that timer is _still_ ticking, even when Neovim is
+      -- closed.
+      persistent = true,
+    },
   },
 }
 ```
@@ -62,7 +71,7 @@ return {
 
 #### Closest timer
 
-You can display the closest timer to expire in `lualine`:
+You can display the closest timer to expire** in `lualine`:
 
 ![lualine integration](./pics/lualine.jpg)
 
@@ -82,7 +91,30 @@ You can display the closest timer to expire in `lualine`:
 }
 ```
 
-## TODO
+## API
 
-* [ ] Saving timers across sessions, so that quitting Neovim (`:wqa`) does not
-lose active timers.
+### Recepies
+
+#### Pomodoro Timer with break
+
+```lua
+{
+  "<leader>Tp",
+  function()
+    local t = require("timer.timer")
+    local d = require("timer.duration")
+    local u = require("timer.unit")
+    local m = require("timer")
+
+    local break_timer = t.new(d.from(5 * u.MINUTE), "Break is over")
+    local pomodoro_timer = t.new(
+      d.from(25 * u.MINUTE),
+      "Pomodoro is over",
+      function() m.start_timer(break_timer) end
+    )
+
+    m.start_timer(pomodoro_timer)
+  end,
+  desc = "Start Pomodoro 25/5 timer",
+},
+```
