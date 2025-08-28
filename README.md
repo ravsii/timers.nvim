@@ -7,28 +7,41 @@ and providing a **clean API** for other plugins or custom configurations.
 > [!WARNING]
 >
 > **This library is in active development!**
->
-> The API is unstable and may change at any time.
-> Breaking changes can occur between minor or patch versions.
+
+## Table Of Contents
+
+<!--toc:start-->
+- [timer.nvim](#timernvim)
+  - [Table Of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Commands](#commands)
+    - [`:TimerStart` Usage](#timerstart-usage)
+      - [Duration format](#duration-format)
+      - [Examples](#examples)
+  - [Integrations](#integrations)
+    - [Lualine](#lualine)
+      - [Closest timer](#closest-timer)
+  - [API](#api)
+    - [Recipes](#recipes)
+      - [Pomodoro Timer with break](#pomodoro-timer-with-break)
+<!--toc:end-->
 
 ## Installation
 
 Using `lazy.nvim`:
 
 ```lua
-return {
-  {
-    'ravsii/timer.nvim',
-    ---@module "timer.config"
-    ---@type Config
-    opts = {
-      -- Save timers across reloads / sessions.
-      -- If true, neovim will save your active timers on disk and load them
-      -- back after you enter it again.
-      -- Keep in mind that timer is _still_ ticking, even when Neovim is
-      -- closed.
-      persistent = true,
-    },
+{
+  'ravsii/timer.nvim',
+  ---@module "timer.config"
+  ---@type Config
+  opts = {
+    -- Save timers across reloads / sessions.
+    -- If true, neovim will save your active timers on disk and load them
+    -- back after you enter it again.
+    -- Keep in mind that timer is _still_ ticking, even when Neovim is
+    -- closed.
+    persistent = true,
   },
 }
 ```
@@ -44,15 +57,15 @@ return {
 
 ### `:TimerStart` Usage
 
- Starts a timer using a **duration string**, similar to Go’s `time.Duration`
- format:
+Starts a timer using a **duration string**, similar to Go’s `time.Duration`
+format:
 
 #### Duration format
 
-* `s` → seconds
-* `m` → minutes
-* `h` → hours
-* Numbers without a unit are treated as milliseconds
+- `s` → seconds
+- `m` → minutes
+- `h` → hours
+- Numbers without a unit are treated as milliseconds
 
 #### Examples
 
@@ -68,8 +81,8 @@ return {
 
 > Notes:
 >
-> * If no message is provided, the default message is `"Timer finished!"`.
-> * The message can contain spaces; everything after the first space is treated
+> - If no message is provided, the default message is `"Timer finished!"`.
+> - The message can contain spaces; everything after the first space is treated
 >   as the message.
 
 ## Integrations
