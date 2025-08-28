@@ -7,7 +7,10 @@ Duration.__index = Duration
 ---Create a new Duration object
 ---@param ms? integer duration in milliseconds (default: 0)
 ---@return Duration
-function Duration.from(ms) return setmetatable({ value = ms or 0 }, Duration) end
+function Duration.from(ms)
+  local val = math.max(ms or 0, 0)
+  return setmetatable({ value = val }, Duration)
+end
 
 ---Return value in milliseconds
 ---@return integer ms milliseconds, suitable for lua functions
@@ -16,6 +19,15 @@ function Duration:asMilliseconds() return self.value end
 ---Return value in seconds
 ---@return integer seconds
 function Duration:asSeconds() return self.value / unit.SECOND end
+
+--- Returns a new Duration representing the result of subtracting `sub` from
+--- this duration. This does not modify the current Duration instance.
+---@param sub Duration
+---@return Duration result
+function Duration:sub(sub)
+  local val = math.max(self.value - sub.value, 0)
+  return Duration.from(val)
+end
 
 ---Parse a duration string into a Duration object.
 ---

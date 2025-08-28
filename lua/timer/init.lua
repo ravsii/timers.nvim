@@ -1,6 +1,7 @@
 local config = require('timer.config')
 local duration = require('timer.duration')
 local timers = require('timer.timer')
+local unit = require('timer.unit')
 
 local state_file = vim.fn.stdpath('data') .. '/timer.nvim/state.json'
 
@@ -10,10 +11,12 @@ local COMMANDS = {
   CancelAll = 'TimerCancelAll',
 }
 
+---@alias TimerTable table<integer, Timer>
+
 local M = {
   -- Stores all active timers in a k-v pairs
   -- Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them
-  ---@type table<integer, Timer>
+  ---@type TimerTable
   active_timers = {},
 
   ---@type Config
@@ -25,11 +28,12 @@ function M.setup(opts)
   M.opts = vim.tbl_deep_extend('force', M.opts, opts or {})
   M.setup_user_commands()
   M.setup_autocmds()
+  M.load_state()
 end
 
---- Starts a timer and tracks it in Manager.active_timers
---- @param t Timer Timer object to start
---- @see Timer.cancel
+---Starts a timer and tracks it in Manager.active_timers
+---@see Timer.cancel
+---@param t Timer Timer object to start
 function M.start_timer(t)
   local id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
     vim.notify(t.message, vim.log.levels.INFO)
@@ -41,6 +45,7 @@ function M.start_timer(t)
 
   t.id = id
   M.active_timers[t.id] = t
+  M.save_state()
 end
 
 ---@return Timer? timer First timer that's about to expire or nil, if there are
@@ -109,10 +114,6 @@ function M.save_state()
 
   local dir = vim.fn.fnamemodify(state_file, ':h')
   vim.fn.mkdir(dir, 'p')
-  local f = io.open(state_file, 'a') -- "a" = append or create
-  if f then
-    f:close()
-  end
 
   local data = vim.fn.json_encode(M.active_timers)
   vim.fn.writefile({ data }, state_file)
@@ -124,7 +125,15 @@ function M.load_state()
   end
 
   local data = vim.fn.readfile(state_file)
-  M.state = vim.fn.json_decode(data)
+  ---@type TimerTable
+  local old_timers = vim.fn.json_decode(data)
+
+  local cur_time = os.time()
+
+  for _, t in pairs(old_timers) do
+    local launch_diff_seconds = cur_time - t.created
+    t.duration = t.duration:sub(duration.from(launch_diff_seconds * unit.SECOND))
+  end
 end
 
 ---@return integer count Amount of active timers
