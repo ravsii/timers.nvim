@@ -2,6 +2,8 @@ local config = require('timer.config')
 local duration = require('timer.duration')
 local timers = require('timer.timer')
 
+local state_file = vim.fn.stdpath('data') .. '/timer.nvim/state.json'
+
 local COMMANDS = {
   Start = 'TimerStart',
   Stop = 'TimerStop',
@@ -22,6 +24,7 @@ local M = {
 function M.setup(opts)
   M.opts = vim.tbl_deep_extend('force', M.opts, opts or {})
   M.setup_user_commands()
+  M.setup_autocmds()
 end
 
 --- Starts a timer and tracks it in Manager.active_timers
@@ -89,6 +92,41 @@ function M.setup_user_commands()
   end, { nargs = '+' })
 
   vim.api.nvim_create_user_command(COMMANDS.CancelAll, function() M.cancel_all() end, { nargs = 0 })
+end
+
+local aug = vim.api.nvim_create_augroup('TimerSaveState', { clear = true })
+function M.setup_autocmds()
+  vim.api.nvim_create_autocmd('VimLeavePre', {
+    group = aug,
+    callback = function() M.save_state() end,
+  })
+end
+
+function M.save_state()
+  if not M.opts.persistent or M.active_timers_num() == 0 then
+    return
+  end
+
+  local data = vim.fn.json_encode(M.active_timers)
+  vim.fn.writefile(data, state_file)
+end
+
+function M.load_state()
+  if not M.opts.persistent then
+    return
+  end
+
+  local data = vim.fn.readfile(state_file)
+  M.state = vim.fn.json_decode(data)
+end
+
+---@return integer count Amount of active timers
+function M.active_timers_num()
+  local count = 0
+  for _ in pairs(M.active_timers) do
+    count = count + 1
+  end
+  return count
 end
 
 return M
