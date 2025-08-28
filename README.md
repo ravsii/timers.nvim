@@ -24,6 +24,7 @@ and providing a **clean API** for other plugins or custom configurations.
   - [API](#api)
     - [Recipes](#recipes)
       - [Pomodoro Timer with break](#pomodoro-timer-with-break)
+  - [TODO](#todo)
 <!--toc:end-->
 
 ## Installation
@@ -138,3 +139,8 @@ You can display the closest timer to expire** in `lualine`:
   desc = "Start Pomodoro 25/5 timer",
 },
 ```
+
+## TODO
+
+- [ ] Integration with folke's and nvim-notify notifications
+- [ ] Integration with snacks.picker for active timers
