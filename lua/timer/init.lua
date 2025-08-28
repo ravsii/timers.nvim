@@ -57,6 +57,9 @@ function M.start_timer(t)
   M.active_timers[id] = t
   M.save_state()
 
+  local start_msg = 'Timer for ' .. t.duration:into_hms() .. ' started'
+  vim.notify(start_msg)
+
   return cancel_func
 end
 
