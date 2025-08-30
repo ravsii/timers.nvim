@@ -44,14 +44,10 @@ function M.start_timer(t)
     M.save_state()
   end
 
-  local notify_opts = {
-    title = t.title,
-    icon = t.icon,
-  }
+  local notify_opts = { title = t.title, icon = t.icon }
 
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
     cancel_func()
-
     if t.on_finish then
       t.on_finish(t)
     else
