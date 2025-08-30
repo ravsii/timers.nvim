@@ -1,14 +1,14 @@
-local config = require('timer.config')
-local duration = require('timer.duration')
-local timers = require('timer.timer')
-local unit = require('timer.unit')
+local config = require("timer.config")
+local duration = require("timer.duration")
+local timers = require("timer.timer")
+local unit = require("timer.unit")
 
-local state_file = vim.fn.stdpath('data') .. '/timer.nvim/state.json'
+local state_file = vim.fn.stdpath("data") .. "/timer.nvim/state.json"
 
 local COMMANDS = {
-  Start = 'TimerStart',
-  Stop = 'TimerStop',
-  CancelAll = 'TimerCancelAll',
+  Start = "TimerStart",
+  Stop = "TimerStop",
+  CancelAll = "TimerCancelAll",
 }
 
 ---@alias TimerTable table<integer, Timer>
@@ -26,7 +26,7 @@ local M = {
 
 ---@param opts Config
 function M.setup(opts)
-  M.opts = vim.tbl_deep_extend('force', M.opts, opts or {})
+  M.opts = vim.tbl_deep_extend("force", M.opts, opts or {})
   M.setup_user_commands()
   M.setup_autocmds()
   M.load_state()
@@ -46,12 +46,16 @@ function M.start_timer(t)
     M.save_state()
   end
 
+  local notify_opts = {
+    title = t.title,
+    icon = t.icon,
+  }
+
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
-    vim.notify(t.message, vim.log.levels.INFO)
+    vim.notify(t.message, t.log_level, notify_opts)
     if t.on_finish then
       t.on_finish()
     end
-    t.on_finish()
 
     cancel_func()
   end)
@@ -59,9 +63,11 @@ function M.start_timer(t)
   M.active_timers[id] = t
   M.save_state()
 
-  local start_msg = 'Timer for ' .. t.duration:into_hms() .. ' started'
-  vim.notify(start_msg)
-  t.on_start()
+  local start_msg = "Timer for " .. t.duration:into_hms() .. " started"
+  vim.notify(start_msg, t.log_level, notify_opts)
+  if t.on_start then
+    t.on_start()
+  end
 
   return cancel_func
 end
@@ -100,7 +106,7 @@ end
 function M.setup_user_commands()
   vim.api.nvim_create_user_command(COMMANDS.Start, function(opts)
     local args = opts.args
-    local i = args:find('%s')
+    local i = args:find("%s")
 
     local duration_str, message
     if i then
@@ -113,14 +119,14 @@ function M.setup_user_commands()
     local d = duration.parse_format(duration_str)
     local t = timers.new(d, { message = message })
     M.start_timer(t)
-  end, { nargs = '+' })
+  end, { nargs = "+" })
 
   vim.api.nvim_create_user_command(COMMANDS.CancelAll, function() M.cancel_all() end, { nargs = 0 })
 end
 
-local aug = vim.api.nvim_create_augroup('TimerSaveState', { clear = true })
+local aug = vim.api.nvim_create_augroup("TimerSaveState", { clear = true })
 function M.setup_autocmds()
-  vim.api.nvim_create_autocmd('VimLeavePre', {
+  vim.api.nvim_create_autocmd("VimLeavePre", {
     group = aug,
     callback = function() M.save_state() end,
   })
@@ -131,8 +137,8 @@ function M.save_state()
     return
   end
 
-  local dir = vim.fn.fnamemodify(state_file, ':h')
-  vim.fn.mkdir(dir, 'p')
+  local dir = vim.fn.fnamemodify(state_file, ":h")
+  vim.fn.mkdir(dir, "p")
 
   ---@type Timer[]
   local saved = {}

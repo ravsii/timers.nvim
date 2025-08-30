@@ -1,5 +1,5 @@
-local Duration = require('timer.duration')
-local Unit = require('timer.unit')
+local Duration = require("timer.duration")
+local Unit = require("timer.unit")
 
 ---@class Timer:TimerOpts
 ---@field created number  -- os.time()
@@ -11,6 +11,7 @@ Timer.__index = Timer
 ---@field message? string -- message that shows up on timer finish. "Timer Finished!" is used if it's empty.
 ---@field icon? string | boolean -- icon that will be passed to nvim.notify, false to don't pass anything
 ---@field title? string
+---@field log_level? vim.log.levels
 ---@field on_start? fun() extra callback on timer start
 ---@field on_finish? fun() extra callback on timer finish
 
@@ -22,10 +23,11 @@ Timer.__index = Timer
 function Timer.new(duration, opts)
   opts = opts or {}
 
-  local timer = vim.tbl_extend('keep', {
-    duration = duration,
+  local timer = vim.tbl_extend("keep", { ---@type Timer
     created = os.time(),
-    message = opts.message or 'Timer finished!',
+    duration = duration,
+    log_level = vim.log.levels.INFO,
+    message = opts.message or "Timer finished!",
   }, opts)
 
   local self = setmetatable(timer, Timer)
