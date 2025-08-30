@@ -101,12 +101,15 @@ These options are used by default and you don't need to pass all of them.
 
 ### Keymaps
 
-Keymaps usually do some kind of info display (as of now). For creating new
-timers see Commands
+These are mostly examples, rather than something you should set.
 
 ```lua
 local map = vim.keymap.set
 
+map({ "n" }, "<leader>Tt",
+    function() m.start_timer(t.new(1000)) end, { desc = "1s timer" })
+map({ "n" }, "<leader>Tl",
+    function() m.start_timer(t.new(d.from(u.HOUR))) end, { desc = "1h timer" })
 map({ "n" }, "<leader>Ta",
     require("timer.ui").active_timers, { desc = "Active timers" })
 map({ "n" }, "<leader>Tc",
