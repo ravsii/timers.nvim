@@ -4,7 +4,6 @@ local d = require("timer.duration")
 local m = require("timer")
 local t = require("timer.timer")
 local u = require("timer.unit")
-local ui = require("timer.ui")
 
 local map = vim.keymap.set
 

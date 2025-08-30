@@ -104,6 +104,11 @@ These options are used by default and you don't need to pass all of them.
 These are mostly examples, rather than something you should set.
 
 ```lua
+local m = require("timer") -- manager
+local t = require("timer.timer") -- timer
+local d = require("timer.duration") -- duration
+local u = require("timer.unit") -- duration units
+
 local map = vim.keymap.set
 
 map({ "n" }, "<leader>Tt",
