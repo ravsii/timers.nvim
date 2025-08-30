@@ -20,14 +20,11 @@ local M = {
   ---Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them.
   ---WARN: Please, do not interact with it. Use approprioate functions.
   active_timers = {},
-
-  ---@type Config
-  opts = config.defaults,
 }
 
 ---@param opts Config
 function M.setup(opts)
-  M.opts = vim.tbl_deep_extend("force", M.opts, opts or {})
+  config:setup(opts or {})
   M.setup_user_commands()
   M.setup_autocmds()
   M.load_state()
@@ -136,7 +133,7 @@ function M.setup_autocmds()
 end
 
 function M.save_state()
-  if not M.opts.persistent then
+  if not config.persistent then
     return
   end
 
@@ -158,7 +155,7 @@ function M.save_state()
 end
 
 function M.load_state()
-  if not M.opts.persistent then
+  if not config.persistent then
     return
   end
 
