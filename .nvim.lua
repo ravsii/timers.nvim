@@ -31,4 +31,6 @@ map({ "n" }, "<leader>Tp", function()
   })
 
   m.start_timer(pomodoro_timer)
-end, { desc = "Timer Pomodoro Test" })
+end, { desc = "Test Pomodoro timer" })
+
+map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "Test Default Timer" })

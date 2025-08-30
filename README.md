@@ -34,6 +34,18 @@ Using `lazy.nvim`:
 ```lua
 {
   'ravsii/timer.nvim',
+  -- See below, empty is fine
+  opts = {},
+}
+```
+
+### Options
+
+These options are used by default and you don't need to pass all of them.
+
+```lua
+{
+  'ravsii/timer.nvim',
   ---@module "timer.config"
   ---@type Config
   opts = {
@@ -42,7 +54,15 @@ Using `lazy.nvim`:
     -- back after you enter it again.
     -- Keep in mind that timer is _still_ ticking, even when Neovim is
     -- closed.
-    persistent = true,
+    persistent = false,
+    -- Default values for new timers, if they weren't passed explicitly.
+    -- See type hints for all the options, or see TimerOpts.
+    default_timer = {
+      icon = "󱎫",
+      log_level = vim.log.levels.INFO,
+      message = "Timer Finished!",
+      title = "timer.nvim",
+    },
   },
 }
 ```

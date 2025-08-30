@@ -24,7 +24,7 @@ local M = {
 
 ---@param opts Config
 function M.setup(opts)
-  config:setup(opts or {})
+  config.setup(opts or {})
   M.setup_user_commands()
   M.setup_autocmds()
   M.load_state()
