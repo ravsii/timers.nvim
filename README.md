@@ -142,5 +142,11 @@ You can display the closest timer to expire** in `lualine`:
 
 ## TODO
 
-- [ ] Integration with folke's and nvim-notify notifications
+- [x] Saving timers across sessions (configurable)
+- [x] More options for timers
+  - [x] Callbacks
+  - [x] Custom icon
+  - [x] Custom title
+  - [x] Custom messages
+- [x] Integration with various `vim.notify` plugins (snacks, vim-notifier)
 - [ ] Integration with snacks.picker for active timers
