@@ -9,7 +9,7 @@ local map = vim.keymap.set
 
 map({ "n" }, "<leader>Tp", function()
   -- Duration as ms
-  local break_duration = 5 * 60 * 1000
+  local break_duration = 5 * 1000 -- 5 seconds
 
   local break_timer = t.new(break_duration, {
     message = "Break is over",
@@ -20,7 +20,7 @@ map({ "n" }, "<leader>Tp", function()
   })
 
   -- or, using a go-like api
-  local ppomodoro_duration = d.from(25 * u.MINUTE)
+  local ppomodoro_duration = d.from(5 * u.SECOND)
 
   local pomodoro_timer = t.new(ppomodoro_duration, {
     title = "Pomodoro",

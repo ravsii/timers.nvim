@@ -15,8 +15,8 @@ Timer.__index = Timer
 ---@field icon? string | boolean -- Icon that will be passed to nvim.notify, false to don't pass anything
 ---@field title? string
 ---@field log_level? vim.log.levels
----@field on_start? fun(Timer) Can be used to replace the default callback
----@field on_finish? fun(Timer) Can be used to replace the default callback
+---@field on_start? fun(t: Timer) Can be used to replace the default callback
+---@field on_finish? fun(t: Timer) Can be used to replace the default callback
 
 ---Create a new timer.
 ---@see TimerManager.start_timer starts it.
@@ -35,7 +35,7 @@ function Timer.new(duration, opts)
   local timer = vim.tbl_extend("keep", { ---@type Timer
     created = os.time(),
     duration = duration,
-    log_level = vim.log.levels.INFO,
+    log_level = opts.log_level or vim.log.levels.INFO,
     message = opts.message or "Timer finished!",
   }, opts)
 
