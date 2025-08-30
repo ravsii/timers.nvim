@@ -4,6 +4,7 @@ local d = require("timer.duration")
 local m = require("timer")
 local t = require("timer.timer")
 local u = require("timer.unit")
+local ui = require("timer.ui")
 
 local map = vim.keymap.set
 
@@ -34,3 +35,7 @@ map({ "n" }, "<leader>Tp", function()
 end, { desc = "Test Pomodoro timer" })
 
 map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "Test Default Timer" })
+map({ "n" }, "<leader>Tl", function() m.start_timer(t.new(d.from(u.HOUR))) end, { desc = "Test Long Timer" })
+map({ "n" }, "<leader>Ta", require("timer.ui").active_timers, { desc = "Active timers" })
+map({ "n" }, "<leader>Tc", require("timer.ui").cancel, { desc = "Cancel a timer" })
+map({ "n" }, "<leader>TC", require("timer").cancel_all, { desc = "Cancel all timers" })

@@ -13,7 +13,10 @@ and providing a **clean API** for other plugins or custom configurations.
 <!--toc:start-->
 - [timer.nvim](#timernvim)
   - [Table Of Contents](#table-of-contents)
+  - [Why not X?](#why-not-x)
   - [Installation](#installation)
+    - [Options](#options)
+    - [Keymaps](#keymaps)
   - [Commands](#commands)
     - [`:TimerStart` Usage](#timerstart-usage)
       - [Duration format](#duration-format)
@@ -26,6 +29,35 @@ and providing a **clean API** for other plugins or custom configurations.
       - [Pomodoro Timer with break](#pomodoro-timer-with-break)
   - [TODO](#todo)
 <!--toc:end-->
+
+## Why not X?
+
+Yes, there are already Neovim timer plugins out there — for example:
+
+- [pulse.nvim](https://github.com/linguini1/pulse.nvim)
+- [pomo.nvim](https://github.com/epwalsh/pomo.nvim)
+- [timerly](https://github.com/nvzone/timerly)
+
+Each focuses on a different aspect of timers, whether it’s specific presets,
+timer management, or something else.
+
+So why make another one?
+
+We wanted to explore a slightly different approach: focusing on hackability and
+providing a good API that other plugins can build on. Instead of being a
+complete opinionated timer solution, this plugin is designed to be extensible
+and easy to integrate.
+
+If you’re looking for a timer that "just works" out of the box, the other
+plugins are great! But if you want something flexible and composable for
+custom workflows, maybe try ours.
+
+---
+
+Also, full disclosure: this is my first Neovim plugin. Part of the goal here is
+just to experiment with Neovim API and build something without relying on
+something like [planery](https://github.com/nvim-lua/plenary.nvim) or
+[nui](https://github.com/MunifTanjim/nui.nvim)
 
 ## Installation
 
@@ -67,6 +99,22 @@ These options are used by default and you don't need to pass all of them.
 }
 ```
 
+### Keymaps
+
+Keymaps usually do some kind of info display (as of now). For creating new
+timers see Commands
+
+```lua
+local map = vim.keymap.set
+
+map({ "n" }, "<leader>Ta",
+    require("timer.ui").active_timers, { desc = "Active timers" })
+map({ "n" }, "<leader>Tc",
+    require("timer.ui").cancel, { desc = "Cancel a timer" })
+map({ "n" }, "<leader>TC",
+    require("timer").cancel_all, { desc = "Cancel all timers" })
+```
+
 ## Commands
 
 `timer.nvim` provides the following Neovim user commands:
@@ -100,12 +148,6 @@ format:
 :TimerStart 10h29m59s Complex Time      " 10 hours 29 minutes and 59 seconds
 ```
 
-> Notes:
->
-> - If no message is provided, the default message is `"Timer finished!"`.
-> - The message can contain spaces; everything after the first space is treated
->   as the message.
-
 ## Integrations
 
 ### Lualine
@@ -133,6 +175,9 @@ You can display the closest timer to expire** in `lualine`:
 ```
 
 ## API
+
+This section is yet to be filled, but you can see some examples in `.nvim.lua`
+as well.
 
 ### Recipes
 
@@ -169,4 +214,11 @@ You can display the closest timer to expire** in `lualine`:
   - [x] Custom title
   - [x] Custom messages
 - [x] Integration with various `vim.notify` plugins (snacks, vim-notifier)
-- [ ] Integration with snacks.picker for active timers
+- [x] Picker integrations
+  - [x] `vim.ui.select`
+  - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
+  all the stuff for now, and its api is widely supported across multiple
+  plugins.
+- [ ] Fullscreen mode for current timer
+  - [ ] Add ability to see other timers
+- [ ] Interactive timer creation

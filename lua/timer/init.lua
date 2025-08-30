@@ -18,7 +18,7 @@ local M = {
   ---@type TimerTable
   ---Stores all active timers in a k-v pairs.
   ---Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them.
-  ---WARN: Please, do not interact with it. Use approprioate functions.
+  ---WARN: Please, do not modify it. Use approprioate timer functions instead.
   active_timers = {},
 }
 
@@ -88,6 +88,21 @@ function M.get_closest_timer()
   end
 
   return minTimer
+end
+
+---Cancels a timer by its id
+---@param id integer
+---@return boolean value true if the timer was found and stopped
+function M.cancel(id)
+  if M.active_timers[id] == nil then
+    return false
+  end
+
+  vim.fn.timer_stop(id)
+  M.active_timers[id] = nil
+  M.save_state()
+
+  return true
 end
 
 --- Cancel all active timers
