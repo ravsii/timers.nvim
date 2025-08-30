@@ -112,7 +112,7 @@ map({ "n" }, "<leader>Ta",
 map({ "n" }, "<leader>Tc",
     require("timer.ui").cancel, { desc = "Cancel a timer" })
 map({ "n" }, "<leader>TC",
-    require("timer").cancel_all, { desc = "Cancel all timers" })
+    require("timer.ui").cancel_all, { desc = "Cancel all timers" })
 ```
 
 ## Commands

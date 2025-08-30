@@ -38,4 +38,4 @@ map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "
 map({ "n" }, "<leader>Tl", function() m.start_timer(t.new(d.from(u.HOUR))) end, { desc = "Test Long Timer" })
 map({ "n" }, "<leader>Ta", require("timer.ui").active_timers, { desc = "Active timers" })
 map({ "n" }, "<leader>Tc", require("timer.ui").cancel, { desc = "Cancel a timer" })
-map({ "n" }, "<leader>TC", require("timer").cancel_all, { desc = "Cancel all timers" })
+map({ "n" }, "<leader>TC", require("timer.ui").cancel_all, { desc = "Cancel all timers" })
