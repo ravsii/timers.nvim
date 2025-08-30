@@ -219,6 +219,10 @@ as well.
   - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
   all the stuff for now, and its api is widely supported across multiple
   plugins.
+- [ ] Commands
+  - [x] `TimerStart`
+  - [ ] `TimerCancel`
+  - [x] `TimerCancelAll`
 - [ ] Fullscreen mode for current timer
   - [ ] Add ability to see other timers
 - [ ] Interactive timer creation
