@@ -13,6 +13,7 @@ local COMMANDS = {
 
 ---@alias TimerTable table<integer, Timer>
 
+---@class TimerManager
 local M = {
   -- Stores all active timers in a k-v pairs
   -- Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them
@@ -47,9 +48,10 @@ function M.start_timer(t)
 
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
     vim.notify(t.message, vim.log.levels.INFO)
-    if t.callback then
-      t.callback()
+    if t.on_finish then
+      t.on_finish()
     end
+    t.on_finish()
 
     cancel_func()
   end)
@@ -59,6 +61,7 @@ function M.start_timer(t)
 
   local start_msg = 'Timer for ' .. t.duration:into_hms() .. ' started'
   vim.notify(start_msg)
+  t.on_start()
 
   return cancel_func
 end
@@ -108,7 +111,7 @@ function M.setup_user_commands()
     end
 
     local d = duration.parse_format(duration_str)
-    local t = timers.new(d, message)
+    local t = timers.new(d, { message = message })
     M.start_timer(t)
   end, { nargs = '+' })
 
@@ -162,11 +165,11 @@ function M.load_state()
   local old_timers = vim.fn.json_decode(vim.fn.readfile(state_file))
   local cur_time = os.time()
 
-  for _, t in ipairs(old_timers) do
-    local sub = duration.from((cur_time - t.created) * unit.SECOND)
-    local time_left = duration.from(t.duration.value):sub(sub)
+  for _, opts in ipairs(old_timers) do
+    local sub = duration.from((cur_time - opts.created) * unit.SECOND)
+    local time_left = duration.from(opts.duration.value):sub(sub)
     if time_left.value > 0 then
-      M.start_timer(timers.new(time_left, t.message))
+      M.start_timer(timers.new(time_left, opts))
     end
   end
 end

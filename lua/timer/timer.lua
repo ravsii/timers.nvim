@@ -1,30 +1,34 @@
 local Duration = require('timer.duration')
 local Unit = require('timer.unit')
 
----@class Timer
----@field message string
+---@class Timer:TimerOpts
 ---@field created number  -- os.time()
 ---@field duration Duration
----@field callback fun()? -- NOTE: not saved with persistent=true
 local Timer = {}
 Timer.__index = Timer
 
----Create a new timer instance. After being created, timer is not started and
----also not given an id. Check timer.manager.start_timer
----@param duration Duration
----@param message? string -- If message is nil, "Timer Finished!" will be used.
----@param callback? fun()
----@return Timer
-function Timer.new(duration, message, callback)
-  message = (message and message ~= '') and message or 'Timer finished!'
+---@class TimerOpts
+---@field message? string -- message that shows up on timer finish. "Timer Finished!" is used if it's empty.
+---@field icon? string | boolean -- icon that will be passed to nvim.notify, false to don't pass anything
+---@field title? string
+---@field on_start? fun() extra callback on timer start
+---@field on_finish? fun() extra callback on timer finish
 
-  local self = setmetatable({
-    id = -1,
-    message = message,
-    created = os.time(),
+---Create a new timer.
+---@see TimerManager.start_timer starts it.
+---@param duration Duration
+---@param opts? TimerOpts
+---@return Timer
+function Timer.new(duration, opts)
+  opts = opts or {}
+
+  local timer = vim.tbl_extend('keep', {
     duration = duration,
-    callback = callback,
-  }, Timer)
+    created = os.time(),
+    message = opts.message or 'Timer finished!',
+  }, opts)
+
+  local self = setmetatable(timer, Timer)
 
   return self
 end
