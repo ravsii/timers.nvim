@@ -30,21 +30,20 @@ function M.setup(opts)
   M.load_state()
 end
 
----Starts a timer and tracks it in TimerManager.active_timers
+---Starts a timer and tracks it in TimerManager.active_timers. The function
+---returns 2 values for cancellation.
 ---@param t Timer Timer object to start.
----@return fun() cancel Cancel func that can be used to stop the timer.
+---@return integer id Timer ID
+---@return fun() cancel Cancel func that can be used to stop the timer. It
+---already knows the correct ID.
 function M.start_timer(t)
   ---ID is created here, but assigned later. It's required for callbacks so we
   ---have to do it this way.
   ---@type integer
   local id
 
-  local cancel_func = function()
-    M.active_timers[id] = nil
-    M.save_state()
-  end
-
   local notify_opts = { title = t.title, icon = t.icon }
+  local cancel_func = function() M.cancel(id) end
 
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
     cancel_func()
@@ -65,7 +64,7 @@ function M.start_timer(t)
     vim.notify(start_msg, t.log_level, notify_opts)
   end
 
-  return cancel_func
+  return id, cancel_func
 end
 
 ---@return Timer? timer First timer that's about to expire or nil, if there are
