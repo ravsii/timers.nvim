@@ -3,7 +3,7 @@ local duration = require("timer.duration")
 local timers = require("timer.timer")
 local unit = require("timer.unit")
 
-local state_file = vim.fn.stdpath("data") .. "/timer.nvim/state.json"
+local state_file = vim.fn.stdpath("data") .. "/timer.nvim/timers.json"
 
 local COMMANDS = {
   Start = "TimerStart",
@@ -15,9 +15,10 @@ local COMMANDS = {
 
 ---@class TimerManager
 local M = {
-  -- Stores all active timers in a k-v pairs
-  -- Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them
   ---@type TimerTable
+  ---Stores all active timers in a k-v pairs.
+  ---Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them.
+  ---WARN: Please, do not interact with it. Use approprioate functions.
   active_timers = {},
 
   ---@type Config
@@ -32,9 +33,9 @@ function M.setup(opts)
   M.load_state()
 end
 
----Starts a timer and tracks it in Manager.active_timers
----@param t Timer Timer object to start
----@return fun() cancel Cancel func that can be used to stop the timer
+---Starts a timer and tracks it in TimerManager.active_timers
+---@param t Timer Timer object to start.
+---@return fun() cancel Cancel func that can be used to stop the timer.
 function M.start_timer(t)
   ---ID is created here, but assigned later. It's required for callbacks so we
   ---have to do it this way.
@@ -52,21 +53,23 @@ function M.start_timer(t)
   }
 
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
-    vim.notify(t.message, t.log_level, notify_opts)
-    if t.on_finish then
-      t.on_finish()
-    end
-
     cancel_func()
+
+    if t.on_finish then
+      t.on_finish(t)
+    else
+      vim.notify(t.message, t.log_level, notify_opts)
+    end
   end)
 
   M.active_timers[id] = t
   M.save_state()
 
-  local start_msg = "Timer for " .. t.duration:into_hms() .. " started"
-  vim.notify(start_msg, t.log_level, notify_opts)
   if t.on_start then
-    t.on_start()
+    t.on_start(t)
+  else
+    local start_msg = "Timer for " .. t.duration:into_hms() .. " started"
+    vim.notify(start_msg, t.log_level, notify_opts)
   end
 
   return cancel_func
@@ -144,14 +147,10 @@ function M.save_state()
   local saved = {}
 
   for _, t in pairs(M.active_timers) do
-    table.insert(
-      saved, ---@type Timer
-      {
-        created = t.created,
-        message = t.message,
-        duration = t.duration,
-      }
-    )
+    local copy = vim.tbl_deep_extend("force", {}, t)
+    copy.on_start = nil
+    copy.on_finish = nil
+    table.insert(saved, copy)
   end
 
   local data = vim.fn.json_encode(saved)
