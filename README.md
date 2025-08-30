@@ -54,9 +54,9 @@ custom workflows, maybe try ours.
 
 ---
 
-Also, full disclosure: this is my first Neovim plugin. Part of the goal here is
-just to experiment with Neovim API and build something without relying on
-something like [planery](https://github.com/nvim-lua/plenary.nvim) or
+Also, this is my first Neovim plugin. Part of the goal here is just to
+experiment with Neovim API and build something without relying on something
+like [plenary](https://github.com/nvim-lua/plenary.nvim) or
 [nui](https://github.com/MunifTanjim/nui.nvim)
 
 ## Installation
