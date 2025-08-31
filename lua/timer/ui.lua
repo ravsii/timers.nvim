@@ -72,9 +72,60 @@ function M.cancel_all()
 end
 
 function M.fullscreen()
-  local buf = vim.api.nvim_create_buf(false, false)
-  local win = vim.api.nvim_get_current_win()
+  -- Create scratch buffer
+  local buf = vim.api.nvim_create_buf(false, true)
+  local width = math.floor(vim.o.columns * 0.8)
+  local height = math.floor(vim.o.lines * 0.8)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
 
+  -- Open floating window
+  local win = vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+  })
+
+  local wo = vim.wo[win]
+  wo.winfixwidth = true
+  wo.winfixheight = true
+  wo.number = false
+  wo.relativenumber = false
+  wo.cursorline = false
+  wo.colorcolumn = ""
+
+  -- Function to build centered content from active timers
+  local function build_content()
+    local lines = {}
+
+    for _, item in pairs(active_timers_list()) do
+      table.insert(lines, format_item_select(item))
+    end
+
+    table.insert(lines, "")
+    table.insert(lines, "Press 'q' to quit.")
+
+    -- Center vertically and horizontally
+    local top_padding = math.floor((height - #lines) / 2)
+    local content = {}
+    for _ = 1, top_padding do
+      table.insert(content, "")
+    end
+    for _, line in ipairs(lines) do
+      if line == "" then
+        table.insert(content, "")
+      else
+        local left_padding = math.floor((width - #line) / 2)
+        table.insert(content, string.rep(" ", left_padding) .. line)
+      end
+    end
+
+    return content
+  end
+
+  -- Timer for background updates
   local timer = vim.uv.new_timer()
   if not timer then
     error("can't create a new background timer")
@@ -82,7 +133,7 @@ function M.fullscreen()
 
   timer:start(
     0,
-    1000,
+    100,
     vim.schedule_wrap(function()
       if not vim.api.nvim_buf_is_valid(buf) then
         timer:stop()
@@ -90,37 +141,27 @@ function M.fullscreen()
         return
       end
 
-      local lines = {}
-      for _, item in pairs(active_timers_list()) do
-        table.insert(lines, format_item_select(item))
-      end
+      local content = build_content()
 
-      table.insert(lines, "")
-      table.insert(lines, "Press 'q' to quit.")
-      local width, height = vim.o.columns, vim.o.lines
-      local top_padding = math.floor((height - #lines) / 2)
-      local content = {}
-      for _ = 1, top_padding do
-        table.insert(content, "")
-      end
-      for _, line in ipairs(lines) do
-        local left_padding = math.floor((width - #line) / 2)
-        table.insert(content, string.rep(" ", left_padding) .. line)
-      end
-
+      -- Update buffer safely
       vim.bo[buf].modifiable = true
-      vim.notify("1")
       vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
       vim.bo[buf].modifiable = false
     end)
   )
 
+  -- Show buffer in current window
   vim.api.nvim_win_set_buf(win, buf)
 
+  -- Quit key
   vim.keymap.set("n", "q", function()
-    timer:stop()
-    timer:close()
-    vim.api.nvim_buf_delete(buf, { force = true })
+    if timer then
+      timer:stop()
+      timer:close()
+    end
+    if vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+    end
   end, { buffer = buf })
 end
 
