@@ -71,4 +71,57 @@ function M.cancel_all()
   end
 end
 
+function M.fullscreen()
+  local buf = vim.api.nvim_create_buf(false, false)
+  local win = vim.api.nvim_get_current_win()
+
+  local timer = vim.uv.new_timer()
+  if not timer then
+    error("can't create a new background timer")
+  end
+
+  timer:start(
+    0,
+    1000,
+    vim.schedule_wrap(function()
+      if not vim.api.nvim_buf_is_valid(buf) then
+        timer:stop()
+        timer:close()
+        return
+      end
+
+      local lines = {}
+      for _, item in pairs(active_timers_list()) do
+        table.insert(lines, format_item_select(item))
+      end
+
+      table.insert(lines, "")
+      table.insert(lines, "Press 'q' to quit.")
+      local width, height = vim.o.columns, vim.o.lines
+      local top_padding = math.floor((height - #lines) / 2)
+      local content = {}
+      for _ = 1, top_padding do
+        table.insert(content, "")
+      end
+      for _, line in ipairs(lines) do
+        local left_padding = math.floor((width - #line) / 2)
+        table.insert(content, string.rep(" ", left_padding) .. line)
+      end
+
+      vim.bo[buf].modifiable = true
+      vim.notify("1")
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
+      vim.bo[buf].modifiable = false
+    end)
+  )
+
+  vim.api.nvim_win_set_buf(win, buf)
+
+  vim.keymap.set("n", "q", function()
+    timer:stop()
+    timer:close()
+    vim.api.nvim_buf_delete(buf, { force = true })
+  end, { buffer = buf })
+end
+
 return M
