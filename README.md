@@ -125,37 +125,30 @@ map({ "n" }, "<leader>TC",
 
 ## Commands
 
-`timer.nvim` provides the following Neovim user commands:
+- `:TimerStart <duration> <message?>` - Starts a new timer.
+  - `<duration>`: required, e.g. `10s`, `2m`, `1h30m`. See [Duration
+  format](#duration-format)
+  - `<message?>`: optional
 
-| Command           | Description                                 |
-| ----------------- | ------------------------------------------- |
-| `:TimerStart`     | Start a new timer. For more info see below. |
-| `:TimerCancel`    | Cancel a timer with a given id.             |
-| `:TimerCancelAll` | Cancel all currently active timers.         |
+```vim
+:TimerStart 10                          " 10 milliseconds
+:TimerStart 1500 Quick ping             " 1500 milliseconds (1.5s)
+:TimerStart 45s Quick notification      " 45 seconds
+:TimerStart 3m Take a short break!      " 3 minutes
+:TimerStart 3.5m Stretch now!           " 3 minutes 30 seconds
+:TimerStart 1.75h Long task reminder    " 1 hour 45 minutes
+:TimerStart 10h29m59s Complex Time      " 10 hours 29 minutes and 59 seconds
+```
 
-### `:TimerStart` Usage
+- `:TimerCancel <id>` - Cancel a specific timer by its ID.
+- `:TimerCancelAll` - Cancel all active timers.
 
-Starts a timer using a **duration string**, similar to Go’s `time.Duration`
-format:
-
-#### Duration format
+### Duration format
 
 - `s` → seconds
 - `m` → minutes
 - `h` → hours
 - Numbers without a unit are treated as milliseconds
-
-#### Examples
-
-```vim
-:TimerStart 3m Take a short break!      " 3 minutes
-:TimerStart 3.5m Stretch now!           " 3 minutes 30 seconds
-:TimerStart 1.75h Long task reminder    " 1 hour 45 minutes
-:TimerStart 45s Quick notification      " 45 seconds
-:TimerStart 1500 Quick ping             " 1500 milliseconds (1.5s)
-:TimerStart 10                          " 10 milliseconds
-:TimerStart 10h29m59s Complex Time      " 10 hours 29 minutes and 59 seconds
-```
 
 ## Integrations
 
@@ -228,9 +221,9 @@ as well.
   - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
   all the stuff for now, and its api is widely supported across multiple
   plugins.
-- [ ] Commands
+- [x] Commands
   - [x] `TimerStart`
-  - [ ] `TimerCancel`
+  - [x] `TimerCancel`
   - [x] `TimerCancelAll`
 - [ ] Fullscreen mode for current timer
   - [ ] Add ability to see other timers
