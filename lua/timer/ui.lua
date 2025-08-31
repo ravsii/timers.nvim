@@ -1,55 +1,51 @@
 local manager = require("timer")
 
----@class UI
-local M = {}
-
 local notify_opts = { icon = "󱎫", title = "timer.nvim" }
 
----Shows the list of active timers
-function M.active_timers()
-  local timers = {} ---@type string[]
+---@alias timer_list_item { id: number, t: Timer }
+---@alias timer_list timer_list_item[],
 
-  for _, at in pairs(manager.active_timers) do
-    table.insert(
-      timers,
-      at.icon .. " " .. at.title .. ": " .. at.message .. " | Time left: " .. at:remaining():into_hms()
-    )
-  end
-
-  vim.ui.select(timers, { prompt = "Active Timers" }, function() end)
-end
-
----Shows the list of active timers to cancel
-function M.cancel()
-  ---@alias timerListItem { id: number, t: Timer }
-  ---@alias timerList timerListItem[],
-  ---@type timerList
+---@return timer_list
+local function active_timers_list()
+  ---@type timer_list
   local timers = {}
 
   for id, at in pairs(manager.active_timers) do
     table.insert(timers, { id = id, t = at })
   end
 
+  return timers
+end
+
+---@param item timer_list_item
+---@return string
+local function format_item_select(item)
+  return "ID: "
+    .. item.id
+    .. " | "
+    .. item.t.icon
+    .. " "
+    .. item.t.title
+    .. ": "
+    .. item.t.message
+    .. " | Time left: "
+    .. item.t:remaining():into_hms()
+end
+
+---@class UI
+local M = {}
+
+---Shows the list of active timers
+function M.active_timers()
+  vim.ui.select(active_timers_list(), { prompt = "Active Timers", format_item = format_item_select }, function() end)
+end
+
+---Shows the list of active timers to cancel
+function M.cancel()
   vim.ui.select(
-    timers,
-    {
-      prompt = "Select a timer to cancel",
-      ---@param item timerListItem
-      ---@return string
-      format_item = function(item)
-        return "ID: "
-          .. item.id
-          .. " | "
-          .. item.t.icon
-          .. " "
-          .. item.t.title
-          .. ": "
-          .. item.t.message
-          .. " | Time left: "
-          .. item.t:remaining():into_hms()
-      end,
-    },
-    ---@param item? timerListItem
+    active_timers_list(),
+    { prompt = "Select a timer to cancel", format_item = format_item_select },
+    ---@param item? timer_list_item
     function(item)
       if item == nil then
         return
