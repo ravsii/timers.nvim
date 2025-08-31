@@ -130,6 +130,7 @@ map({ "n" }, "<leader>TC",
 | Command           | Description                                 |
 | ----------------- | ------------------------------------------- |
 | `:TimerStart`     | Start a new timer. For more info see below. |
+| `:TimerCancel`    | Cancel a timer with a given id.             |
 | `:TimerCancelAll` | Cancel all currently active timers.         |
 
 ### `:TimerStart` Usage

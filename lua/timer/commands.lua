@@ -6,7 +6,6 @@ local M = {}
 
 local COMMANDS = {
   Start = "TimerStart",
-  Stop = "TimerStop",
   Cancel = "TimerCancel",
   CancelAll = "TimerCancelAll",
 }
