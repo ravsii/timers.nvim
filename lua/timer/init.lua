@@ -1,15 +1,9 @@
 local config = require("timer.config")
 local duration = require("timer.duration")
-local timers = require("timer.timer")
+local timer = require("timer.timer")
 local unit = require("timer.unit")
 
 local state_file = vim.fn.stdpath("data") .. "/timer.nvim/timers.json"
-
-local COMMANDS = {
-  Start = "TimerStart",
-  Stop = "TimerStop",
-  CancelAll = "TimerCancelAll",
-}
 
 ---@alias TimerTable table<integer, Timer>
 
@@ -25,8 +19,8 @@ local M = {
 ---@param opts Config
 function M.setup(opts)
   config.setup(opts or {})
-  M.setup_user_commands()
-  M.setup_autocmds()
+  require("timer.commands").setup()
+  require("timer.autocmd").setup()
   M.load_state()
 end
 
@@ -113,35 +107,6 @@ function M.cancel_all()
   M.save_state()
 end
 
-function M.setup_user_commands()
-  vim.api.nvim_create_user_command(COMMANDS.Start, function(opts)
-    local args = opts.args
-    local i = args:find("%s")
-
-    local duration_str, message
-    if i then
-      duration_str = args:sub(1, i - 1)
-      message = args:sub(i + 1)
-    else
-      duration_str = args
-    end
-
-    local d = duration.parse_format(duration_str)
-    local t = timers.new(d, { message = message })
-    M.start_timer(t)
-  end, { nargs = "+" })
-
-  vim.api.nvim_create_user_command(COMMANDS.CancelAll, function() M.cancel_all() end, { nargs = 0 })
-end
-
-local aug = vim.api.nvim_create_augroup("TimerSaveState", { clear = true })
-function M.setup_autocmds()
-  vim.api.nvim_create_autocmd("VimLeavePre", {
-    group = aug,
-    callback = function() M.save_state() end,
-  })
-end
-
 function M.save_state()
   if not config.persistent then
     return
@@ -181,7 +146,7 @@ function M.load_state()
     local sub = duration.from((cur_time - opts.created) * unit.SECOND)
     local time_left = duration.from(opts.duration.value):sub(sub)
     if time_left.value > 0 then
-      M.start_timer(timers.new(time_left, opts))
+      M.start_timer(timer.new(time_left, opts))
     end
   end
 end
