@@ -95,6 +95,10 @@ These options are used by default and you don't need to pass all of them.
       message = "Timer Finished!",
       title = "timer.nvim",
     },
+    dashboard = {
+      -- Dashboard update interval, ms.
+      update_interval = 1000,
+    },
   },
 }
 ```
@@ -219,13 +223,17 @@ as well.
 - [x] Picker integrations
   - [x] `vim.ui.select`
   - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
-  all the stuff for now, and its api is widely supported across multiple
-  plugins.
+  everything I need, and its api is widely supported across multiple plugins.
 - [x] Commands
   - [x] `TimerStart`
   - [x] `TimerCancel`
   - [x] `TimerCancelAll`
 - [ ] Fullscreen mode for current timer
-  - [ ] Add ability to see other timers
-  - [ ] Fix concatinate nil bug, when timer expires
+  - [x] Add ability to see other timers
+  - [x] Fix concatinate nil bug, when timer expires
+  - [ ] Fix bug with empty time, on creating new timer while in dashboard
+  - [ ] Auto-resize float
+  - [ ] Disable shrinking/expanding float
+  - [ ] More fonts, custom fonts
+  - [ ] Make pretty (hl groups and such)
 - [ ] Interactive timer creation
