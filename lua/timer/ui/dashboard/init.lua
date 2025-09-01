@@ -1,9 +1,9 @@
+local config = require("timer.config")
+local fonts = require("timer.ui.dashboard.fonts")
 local manager = require("timer")
 
-local notify_opts = { icon = "󱎫", title = "timer.nvim" }
-
----@alias timer_list_item { id: number, t: Timer }
----@alias timer_list timer_list_item[],
+---@class DashboardOpts
+---@field update_interval integer Interval for dashboard state updates, in ms.
 
 ---@return timer_list
 local function active_timers_list()
@@ -32,54 +32,15 @@ local function format_item_select(item)
     .. item.t:remaining():into_hms()
 end
 
----@class UI
-local M = {}
+local D = {}
 
----Shows the list of active timers
-function M.active_timers()
-  vim.ui.select(active_timers_list(), { prompt = "Active Timers", format_item = format_item_select }, function() end)
-end
-
----Shows the list of active timers to cancel
-function M.cancel()
-  vim.ui.select(
-    active_timers_list(),
-    { prompt = "Select a timer to cancel", format_item = format_item_select },
-    ---@param item? timer_list_item
-    function(item)
-      if item == nil then
-        return
-      end
-
-      if manager.cancel(item.id) then
-        vim.notify("Timer cancelled", nil, notify_opts)
-      end
-    end
-  )
-end
-
----Copy of TimerManager.cancel_all, but also gives a feedback message, if there
----were any timers
----@see TimerManager.cancel_all
-function M.cancel_all()
-  local n = manager.active_timers_num()
-  if n > 0 then
-    manager.cancel_all()
-    vim.notify("All timers cancelled", nil, notify_opts)
-  else
-    vim.notify("No active timers", nil, notify_opts)
-  end
-end
-
-function M.fullscreen()
-  -- Create scratch buffer
+function D.show()
   local buf = vim.api.nvim_create_buf(false, true)
   local width = math.floor(vim.o.columns * 0.8)
   local height = math.floor(vim.o.lines * 0.8)
   local row = math.floor((vim.o.lines - height) / 2)
   local col = math.floor((vim.o.columns - width) / 2)
 
-  -- Open floating window
   local win = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
     width = width,
@@ -98,7 +59,19 @@ function M.fullscreen()
 
   -- Function to build centered content from active timers
   local function build_content()
+    ---@type string[]
     local lines = {}
+
+    local closest = manager.get_closest_timer()
+    if closest then
+      local big_timer = fonts.from_duration(closest:remaining())
+
+      vim.list_extend(lines, big_timer)
+      vim.print(lines)
+
+      table.insert(lines, "")
+      table.insert(lines, "")
+    end
 
     local timers = active_timers_list()
     for _, item in pairs(timers) do
@@ -118,7 +91,7 @@ function M.fullscreen()
       if line == "" then
         table.insert(content, "")
       else
-        local left_padding = math.floor((width - #line) / 2)
+        local left_padding = math.floor((width - vim.fn.strdisplaywidth(line)) / 2)
         table.insert(content, string.rep(" ", left_padding) .. line)
       end
     end
@@ -134,7 +107,7 @@ function M.fullscreen()
 
   timer:start(
     0,
-    50,
+    config.dashboard.update_interval,
     vim.schedule_wrap(function()
       if not vim.api.nvim_buf_is_valid(buf) then
         timer:stop()
@@ -166,4 +139,4 @@ function M.fullscreen()
   end, { buffer = buf })
 end
 
-return M
+return D

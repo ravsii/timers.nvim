@@ -1,6 +1,7 @@
 ---@class Config
 ---@field persistent? boolean Save state across Neovim reloads.
 ---@field default_timer? TimerOpts Default values for new timers.
+---@field dashboard? DashboardOpts
 local M = {}
 
 ---@type Config
@@ -12,6 +13,9 @@ local defaults = {
     title = "timer.nvim",
   },
   persistent = false,
+  dashboard = {
+    update_interval = 1000,
+  },
 }
 
 ---@param opts Config
