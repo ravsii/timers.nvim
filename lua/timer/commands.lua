@@ -1,3 +1,4 @@
+local dashboard = require("timer.ui.dashboard")
 local duration = require("timer.duration")
 local manager = require("timer")
 local timer = require("timer.timer")
@@ -6,6 +7,7 @@ local M = {}
 
 local COMMANDS = {
   Start = "TimerStart",
+  Dashboard = "TimerDashboard",
   Cancel = "TimerCancel",
   CancelAll = "TimerCancelAll",
 }
@@ -35,7 +37,9 @@ function M.setup()
     end
   end, { nargs = 1 })
 
-  vim.api.nvim_create_user_command(COMMANDS.CancelAll, function() M.cancel_all() end, { nargs = 0 })
+  vim.api.nvim_create_user_command(COMMANDS.CancelAll, function() manager.cancel_all() end, { nargs = 0 })
+
+  vim.api.nvim_create_user_command(COMMANDS.Dashboard, function() dashboard.show() end, { nargs = 0 })
 end
 
 return M

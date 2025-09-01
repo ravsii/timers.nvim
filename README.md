@@ -146,6 +146,8 @@ map({ "n" }, "<leader>TC",
 
 - `:TimerCancel <id>` - Cancel a specific timer by its ID.
 - `:TimerCancelAll` - Cancel all active timers.
+- `:TimerDashboard` - Shows Dashboard
+![Timer dashboard showcase](./pics/dashboard.jpg)
 
 ### Duration format
 
