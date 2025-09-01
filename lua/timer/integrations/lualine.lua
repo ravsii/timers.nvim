@@ -1,11 +1,12 @@
 local M = {}
 
 function M.closest_timer()
-  local t = require('timer').get_closest_timer()
-  if t ~= nil then
-    return t:remaining():into_hms() or ''
+  local t = require("timer").get_closest_timer()
+  if t == nil then
+    return ""
   end
-  return ''
+
+  return t:remaining():into_hms()
 end
 
 return M
