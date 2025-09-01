@@ -100,7 +100,8 @@ function M.fullscreen()
   local function build_content()
     local lines = {}
 
-    for _, item in pairs(active_timers_list()) do
+    local timers = active_timers_list()
+    for _, item in pairs(timers) do
       table.insert(lines, format_item_select(item))
     end
 
@@ -133,7 +134,7 @@ function M.fullscreen()
 
   timer:start(
     0,
-    100,
+    50,
     vim.schedule_wrap(function()
       if not vim.api.nvim_buf_is_valid(buf) then
         timer:stop()

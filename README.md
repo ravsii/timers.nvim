@@ -227,4 +227,5 @@ as well.
   - [x] `TimerCancelAll`
 - [ ] Fullscreen mode for current timer
   - [ ] Add ability to see other timers
+  - [ ] Fix concatinate nil bug, when timer expires
 - [ ] Interactive timer creation

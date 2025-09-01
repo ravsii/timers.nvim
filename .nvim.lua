@@ -31,6 +31,28 @@ map({ "n" }, "<leader>Tp", function()
   })
 
   m.start_timer(pomodoro_timer)
+end, { desc = "Test Pomodoro timer (fast)" })
+
+map({ "n" }, "<leader>TP", function()
+  local break_duration = 5 * u.MINUTE
+  local break_timer = t.new(break_duration, {
+    message = "Break is over",
+    title = "Break",
+    log_level = 1,
+    icon = "⏾",
+    on_start = function() vim.notify("starting break timer") end,
+  })
+
+  local ppomodoro_duration = d.from(25 * u.MINUTE)
+  local pomodoro_timer = t.new(ppomodoro_duration, {
+    title = "Pomodoro",
+    message = "Pomodoro is over",
+    log_level = 4,
+    icon = "",
+    on_finish = function() m.start_timer(break_timer) end,
+  })
+
+  m.start_timer(pomodoro_timer)
 end, { desc = "Test Pomodoro timer" })
 
 map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "Test Default Timer" })
