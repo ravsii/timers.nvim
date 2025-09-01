@@ -160,7 +160,7 @@ map({ "n" }, "<leader>TC",
 
 #### Closest timer
 
-You can display the closest timer to expire** in `lualine`:
+You can display the closest timer to expire in `lualine`:
 
 ![lualine integration](./pics/lualine.jpg)
 
