@@ -2,6 +2,10 @@ local config = require("timer.config")
 local fonts = require("timer.ui.dashboard.fonts")
 local manager = require("timer")
 
+---@alias lines line[]
+---@alias line segment[]
+---@alias segment {str: string, hl:string}
+
 ---@class DashboardOpts
 ---@field update_interval integer Interval for dashboard state updates, in ms.
 
@@ -77,8 +81,11 @@ function D.show()
     end)
   )
 
+  D.draw(buf, w, h)
   -- Show buffer in current window
   vim.api.nvim_win_set_buf(win, buf)
+  local c1, c2 = math.floor(w / 2 + 1), math.floor(h / 2)
+  vim.api.nvim_win_set_cursor(win, { c2, c1 })
 
   vim.api.nvim_create_autocmd("VimResized", {
     group = group_dashboard,
@@ -131,51 +138,111 @@ end
 ---@param w integer width
 ---@param h integer height
 function D.draw(buf, w, h)
-  local content = D.build_content(w, h)
+  local lines = D.build_lines(w, h)
+  local ns = vim.api.nvim_create_namespace("dashboard")
+
   vim.bo[buf].modifiable = true
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
+
+  -- Build plain text lines
+  local ll = {}
+  for _, segments in ipairs(lines) do
+    local line_text = ""
+    for _, seg in ipairs(segments) do
+      line_text = line_text .. seg.str
+    end
+    table.insert(ll, line_text)
+  end
+
+  -- Write lines first
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, ll)
+
+  -- Apply highlights
+  for i, segments in ipairs(lines) do
+    local col = 0
+    local line_nr = i - 1
+    for _, seg in ipairs(segments) do
+      if seg.hl and #seg.str > 0 then
+        vim.api.nvim_buf_set_extmark(buf, ns, line_nr, col, {
+          end_col = col + #seg.str,
+          hl_group = seg.hl,
+        })
+      end
+      col = col + #seg.str
+    end
+  end
+
   vim.bo[buf].modifiable = false
+end
+
+---Converts a list of strings into lines of segments with the given highlight group.
+---@param lines string[]
+---@param hl? string
+---@return lines
+local function into_segments(lines, hl)
+  local result = {} ---@type lines
+  local hl_str = hl or "" -- ensures hl is string
+
+  for _, s in ipairs(lines) do
+    local line = { { str = s, hl = hl_str } } ---@type line
+    table.insert(result, line)
+  end
+
+  return result
+end
+
+local function line_width(line)
+  local sum = 0
+  for _, segment in ipairs(line) do
+    sum = sum + vim.fn.strdisplaywidth(segment.str)
+  end
+  return sum
 end
 
 ---Build centered content from active timers
 ---@param w integer width
 ---@param h integer height
-function D.build_content(w, h)
-  ---@type string[]
-  local lines = {}
+---@return lines lines
+function D.build_lines(w, h)
+  ---@type lines
+  local segments = {}
 
   local closest = manager.get_closest_timer()
   if closest then
     local big_timer = fonts.from_duration(closest:expire_in())
 
-    vim.list_extend(lines, big_timer)
+    vim.list_extend(segments, into_segments(big_timer))
 
-    table.insert(lines, "")
-    table.insert(lines, "")
+    table.insert(segments, {})
+    table.insert(segments, {})
   end
 
   local timers = active_timers_list()
   --- sort by remaining forst
   table.sort(timers, function(a, b) return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds() end)
   for _, item in pairs(timers) do
-    table.insert(lines, format_item_select(item))
+    table.insert(segments, { { str = format_item_select(item) } })
   end
 
-  table.insert(lines, "")
-  table.insert(lines, "Press 'q' to quit.")
+  table.insert(segments, {})
+  table.insert(segments, {
+    { str = "q", hl = "Character" },
+    { str = " - quit", hl = "BlinkCmpKindReference" },
+  })
 
   -- Center vertically and horizontally
-  local top_padding = math.floor((h - #lines) / 2)
-  local content = {}
+  local top_padding = math.floor((h - #segments) / 2)
+  local content = {} ---@type lines
   for _ = 1, top_padding do
-    table.insert(content, "")
+    table.insert(content, {})
   end
-  for _, line in ipairs(lines) do
+  for _, line in ipairs(segments) do
     if line == "" then
-      table.insert(content, "")
+      table.insert(content, {})
     else
-      local left_padding = math.floor((w - vim.fn.strdisplaywidth(line)) / 2)
-      table.insert(content, string.rep(" ", left_padding) .. line)
+      local lw = line_width(line)
+      local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
+      table.insert(line, 1, { str = left_padding_chars })
+      table.insert(content, line)
     end
   end
 
