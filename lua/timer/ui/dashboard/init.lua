@@ -34,19 +34,18 @@ end
 
 local D = {}
 
+local resize_group = vim.api.nvim_create_augroup("timer/resize", { clear = true })
+
 function D.show()
   local buf = vim.api.nvim_create_buf(false, true)
-  local width = math.floor(vim.o.columns * 0.8)
-  local height = math.floor(vim.o.lines * 0.8)
-  local row = math.floor((vim.o.lines - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
+  local w, h, r, c = D.calc_size()
 
   local win = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
-    width = width,
-    height = height,
-    row = row,
-    col = col,
+    width = w,
+    height = h,
+    row = r,
+    col = c,
   })
 
   local wo = vim.wo[win]
@@ -81,8 +80,10 @@ function D.show()
     table.insert(lines, "")
     table.insert(lines, "Press 'q' to quit.")
 
+    local w, h, _, _ = D.calc_size()
+
     -- Center vertically and horizontally
-    local top_padding = math.floor((height - #lines) / 2)
+    local top_padding = math.floor((h - #lines) / 2)
     local content = {}
     for _ = 1, top_padding do
       table.insert(content, "")
@@ -91,7 +92,7 @@ function D.show()
       if line == "" then
         table.insert(content, "")
       else
-        local left_padding = math.floor((width - vim.fn.strdisplaywidth(line)) / 2)
+        local left_padding = math.floor((w - vim.fn.strdisplaywidth(line)) / 2)
         table.insert(content, string.rep(" ", left_padding) .. line)
       end
     end
@@ -105,6 +106,13 @@ function D.show()
     error("can't create a new background timer")
   end
 
+  local function draw()
+    local content = build_content()
+    vim.bo[buf].modifiable = true
+    vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
+    vim.bo[buf].modifiable = false
+  end
+
   timer:start(
     0,
     config.dashboard.update_interval,
@@ -114,18 +122,29 @@ function D.show()
         timer:close()
         return
       end
-
-      local content = build_content()
-
-      -- Update buffer safely
-      vim.bo[buf].modifiable = true
-      vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
-      vim.bo[buf].modifiable = false
+      draw()
     end)
   )
 
   -- Show buffer in current window
   vim.api.nvim_win_set_buf(win, buf)
+
+  vim.api.nvim_create_autocmd("VimResized", {
+    group = resize_group,
+    callback = function()
+      if vim.api.nvim_win_is_valid(win) then
+        local w, h, r, c = D.calc_size()
+        vim.api.nvim_win_set_config(win, {
+          relative = "editor",
+          width = w,
+          height = h,
+          col = c,
+          row = r,
+        })
+        draw()
+      end
+    end,
+  })
 
   -- Quit key
   vim.keymap.set("n", "q", function()
@@ -136,7 +155,21 @@ function D.show()
     if vim.api.nvim_win_is_valid(win) then
       vim.api.nvim_win_close(win, true)
     end
+    vim.api.nvim_clear_autocmds({ group = resize_group })
   end, { buffer = buf })
+end
+
+---@return integer width
+---@return integer height
+---@return integer row
+---@return integer col
+function D.calc_size()
+  local width = math.floor(vim.o.columns * 0.8)
+  local height = math.floor(vim.o.lines * 0.8)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+
+  return width, height, row, col
 end
 
 return D
