@@ -66,7 +66,6 @@ function D.show()
       local big_timer = fonts.from_duration(closest:remaining())
 
       vim.list_extend(lines, big_timer)
-      vim.print(lines)
 
       table.insert(lines, "")
       table.insert(lines, "")
