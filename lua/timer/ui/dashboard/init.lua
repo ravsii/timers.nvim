@@ -56,8 +56,10 @@ function D.show()
   wo.cursorline = false
   wo.colorcolumn = ""
 
-  -- Function to build centered content from active timers
-  local function build_content()
+  ---Function to build centered content from active timers
+  ---@param w integer width
+  ---@param h integer height
+  local function build_content(w, h)
     ---@type string[]
     local lines = {}
 
@@ -78,8 +80,6 @@ function D.show()
 
     table.insert(lines, "")
     table.insert(lines, "Press 'q' to quit.")
-
-    local w, h, _, _ = D.calc_size()
 
     -- Center vertically and horizontally
     local top_padding = math.floor((h - #lines) / 2)
@@ -105,8 +105,10 @@ function D.show()
     error("can't create a new background timer")
   end
 
-  local function draw()
-    local content = build_content()
+  ---@param w integer width
+  ---@param h integer height
+  local function draw(w, h)
+    local content = build_content(w, h)
     vim.bo[buf].modifiable = true
     vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
     vim.bo[buf].modifiable = false
@@ -121,7 +123,8 @@ function D.show()
         timer:close()
         return
       end
-      draw()
+      local w, h, _, _ = D.calc_size()
+      draw(w, h)
     end)
   )
 
@@ -140,7 +143,7 @@ function D.show()
           col = c,
           row = r,
         })
-        draw()
+        draw(w, h)
       end
     end,
   })
