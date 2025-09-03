@@ -29,12 +29,12 @@ local function format_item_select(item)
     .. ": "
     .. item.t.message
     .. " | Time left: "
-    .. item.t:remaining():into_hms()
+    .. item.t:expire_in():into_hms()
 end
 
 local D = {}
 
-local resize_group = vim.api.nvim_create_augroup("timer/resize", { clear = true })
+local group_dashboard = vim.api.nvim_create_augroup("timer.nvim/dashboard", { clear = true })
 
 function D.show()
   local buf = vim.api.nvim_create_buf(false, true)
@@ -56,62 +56,10 @@ function D.show()
   wo.cursorline = false
   wo.colorcolumn = ""
 
-  ---Function to build centered content from active timers
-  ---@param w integer width
-  ---@param h integer height
-  local function build_content(w, h)
-    ---@type string[]
-    local lines = {}
-
-    local closest = manager.get_closest_timer()
-    if closest then
-      local big_timer = fonts.from_duration(closest:remaining())
-
-      vim.list_extend(lines, big_timer)
-
-      table.insert(lines, "")
-      table.insert(lines, "")
-    end
-
-    local timers = active_timers_list()
-    for _, item in pairs(timers) do
-      table.insert(lines, format_item_select(item))
-    end
-
-    table.insert(lines, "")
-    table.insert(lines, "Press 'q' to quit.")
-
-    -- Center vertically and horizontally
-    local top_padding = math.floor((h - #lines) / 2)
-    local content = {}
-    for _ = 1, top_padding do
-      table.insert(content, "")
-    end
-    for _, line in ipairs(lines) do
-      if line == "" then
-        table.insert(content, "")
-      else
-        local left_padding = math.floor((w - vim.fn.strdisplaywidth(line)) / 2)
-        table.insert(content, string.rep(" ", left_padding) .. line)
-      end
-    end
-
-    return content
-  end
-
   -- Timer for background updates
   local timer = vim.uv.new_timer()
   if not timer then
     error("can't create a new background timer")
-  end
-
-  ---@param w integer width
-  ---@param h integer height
-  local function draw(w, h)
-    local content = build_content(w, h)
-    vim.bo[buf].modifiable = true
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
-    vim.bo[buf].modifiable = false
   end
 
   timer:start(
@@ -123,8 +71,9 @@ function D.show()
         timer:close()
         return
       end
+      ---@diagnostic disable-next-line: redefined-local
       local w, h, _, _ = D.calc_size()
-      draw(w, h)
+      D.draw(buf, w, h)
     end)
   )
 
@@ -132,9 +81,10 @@ function D.show()
   vim.api.nvim_win_set_buf(win, buf)
 
   vim.api.nvim_create_autocmd("VimResized", {
-    group = resize_group,
+    group = group_dashboard,
     callback = function()
       if vim.api.nvim_win_is_valid(win) then
+        ---@diagnostic disable-next-line: redefined-local
         local w, h, r, c = D.calc_size()
         vim.api.nvim_win_set_config(win, {
           relative = "editor",
@@ -143,21 +93,25 @@ function D.show()
           col = c,
           row = r,
         })
-        draw(w, h)
+        D.draw(buf, w, h)
       end
     end,
   })
 
-  -- Quit key
+  local function destroy()
+    if vim.api.nvim_win_is_valid(win) then
+      vim.api.nvim_win_close(win, true)
+    end
+    vim.api.nvim_clear_autocmds({ group = group_dashboard })
+  end
+
+  vim.api.nvim_create_autocmd("WinClosed", { group = group_dashboard, buffer = buf, callback = destroy })
   vim.keymap.set("n", "q", function()
+    destroy()
     if timer then
       timer:stop()
       timer:close()
     end
-    if vim.api.nvim_win_is_valid(win) then
-      vim.api.nvim_win_close(win, true)
-    end
-    vim.api.nvim_clear_autocmds({ group = resize_group })
   end, { buffer = buf })
 end
 
@@ -172,6 +126,60 @@ function D.calc_size()
   local col = math.floor((vim.o.columns - width) / 2)
 
   return width, height, row, col
+end
+
+---@param w integer width
+---@param h integer height
+function D.draw(buf, w, h)
+  local content = D.build_content(w, h)
+  vim.bo[buf].modifiable = true
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, content)
+  vim.bo[buf].modifiable = false
+end
+
+---Build centered content from active timers
+---@param w integer width
+---@param h integer height
+function D.build_content(w, h)
+  ---@type string[]
+  local lines = {}
+
+  local closest = manager.get_closest_timer()
+  if closest then
+    local big_timer = fonts.from_duration(closest:expire_in())
+
+    vim.list_extend(lines, big_timer)
+
+    table.insert(lines, "")
+    table.insert(lines, "")
+  end
+
+  local timers = active_timers_list()
+  --- sort by remaining forst
+  table.sort(timers, function(a, b) return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds() end)
+  for _, item in pairs(timers) do
+    table.insert(lines, format_item_select(item))
+  end
+
+  table.insert(lines, "")
+  table.insert(lines, "Press 'q' to quit.")
+
+  -- Center vertically and horizontally
+  local top_padding = math.floor((h - #lines) / 2)
+  local content = {}
+  for _ = 1, top_padding do
+    table.insert(content, "")
+  end
+  for _, line in ipairs(lines) do
+    if line == "" then
+      table.insert(content, "")
+    else
+      local left_padding = math.floor((w - vim.fn.strdisplaywidth(line)) / 2)
+      table.insert(content, string.rep(" ", left_padding) .. line)
+    end
+  end
+
+  return content
 end
 
 return D

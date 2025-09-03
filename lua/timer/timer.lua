@@ -45,9 +45,9 @@ function T.new(dur, opts)
   return self
 end
 
----Get remaining time in seconds
+---Returns remaining duration of a timer.
 ---@return Duration
-function T:remaining()
+function T:expire_in()
   local expire_at = self.created + self.duration:asSeconds()
   local remaining = expire_at - os.time()
   return duration.from(remaining * unit.SECOND)

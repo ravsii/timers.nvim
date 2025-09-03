@@ -6,7 +6,7 @@ function M.closest_timer()
     return ""
   end
 
-  return t:remaining():into_hms()
+  return t:expire_in():into_hms()
 end
 
 return M

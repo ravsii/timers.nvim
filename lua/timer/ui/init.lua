@@ -29,7 +29,7 @@ local function format_item_select(item)
     .. ": "
     .. item.t.message
     .. " | Time left: "
-    .. item.t:remaining():into_hms()
+    .. item.t:expire_in():into_hms()
 end
 
 ---@class UI
