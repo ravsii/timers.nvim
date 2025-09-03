@@ -7,7 +7,7 @@ local u = require("timer.unit")
 
 local map = vim.keymap.set
 
-map({ "n" }, "<leader>Tp", function()
+map({ "n" }, "<leader>Tt", function()
   -- Duration as ms
   local break_duration = 5 * 1000 -- 5 seconds
 
@@ -55,7 +55,7 @@ map({ "n" }, "<leader>TP", function()
   m.start_timer(pomodoro_timer)
 end, { desc = "Test Pomodoro timer" })
 
-map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "Test Default Timer" })
+-- map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "Test Default Timer" })
 map({ "n" }, "<leader>Tl", function() m.start_timer(t.new(d.from(u.HOUR))) end, { desc = "Test Long Timer" })
 map({ "n" }, "<leader>Ta", require("timer.ui").active_timers, { desc = "Active timers" })
 map({ "n" }, "<leader>Tf", require("timer.ui.dashboard").show, { desc = "Fullscreen" })

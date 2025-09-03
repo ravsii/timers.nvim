@@ -233,7 +233,8 @@ as well.
   - [x] Fix concatinate nil bug, when timer expires
   - [ ] Fix bug with empty time, on creating new timer while in dashboard
   - [x] Auto-resize float
+  - [x] Make pretty (hl groups and such)
+    - Will add some basic stuff, and polish later.
   - [ ] Disable shrinking/expanding float
   - [ ] More fonts, custom fonts
-  - [ ] Make pretty (hl groups and such)
 - [ ] Interactive timer creation
