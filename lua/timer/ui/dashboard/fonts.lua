@@ -86,7 +86,7 @@ function F.from_duration(dur, font)
     local ch = s:sub(i, i)
     local digit = chars[ch]
     for row = 1, max_rows do
-      lines[row] = lines[row] .. (digit[row] or string.rep("x", #digit[0]))
+      lines[row] = lines[row] .. (digit[row] or string.rep("?", #digit[0]))
       if i ~= #s then
         lines[row] = lines[row] .. " "
       end
