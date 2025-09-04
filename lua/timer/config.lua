@@ -2,6 +2,7 @@
 ---@field persistent? boolean Save state across Neovim reloads.
 ---@field default_timer? TimerOpts Default values for new timers.
 ---@field dashboard? DashboardOpts
+---@field debug? boolean Enables debug logging to {data}/timer.nvim/debug.log
 local M = {}
 
 ---@type Config
@@ -16,6 +17,7 @@ local defaults = {
   dashboard = {
     update_interval = 1000,
   },
+  debug = false,
 }
 
 ---@param opts Config
