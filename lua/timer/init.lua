@@ -11,6 +11,7 @@ local state_file = vim.fn.stdpath("data") .. "/timer.nvim/timers.json"
 ---@class TimerManager
 local M = {
   ---@type TimerTable
+  ---@private
   ---Stores all active timers in a k-v pairs.
   ---Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them.
   active_timers = {},
@@ -87,29 +88,9 @@ function M.get_closest_timer()
   return minTimer
 end
 
----Cancels a timer by its id
----@param id integer
----@return boolean value true if the timer was found and stopped
-function M.cancel(id)
-  if M.active_timers[id] == nil then
-    return false
-  end
-
-  vim.fn.timer_stop(id)
-  M.active_timers[id] = nil
-  M.save_state()
-
-  return true
-end
-
---- Cancel all active timers
-function M.cancel_all()
-  for id, _ in pairs(M.active_timers) do
-    vim.fn.timer_stop(id)
-  end
-  M.active_timers = {}
-  M.save_state()
-end
+---Returns all active timers.
+---@return TimerTable timers
+function M.timers() return vim.tbl_deep_extend("force", {}, M.active_timers) end
 
 function M.save_state()
   if not config.persistent then
@@ -164,4 +145,27 @@ function M.active_timers_num()
   return count
 end
 
+---Cancels a timer by its id
+---@param id integer
+---@return boolean value true if the timer was found and stopped
+function M.cancel(id)
+  if M.active_timers[id] == nil then
+    return false
+  end
+
+  vim.fn.timer_stop(id)
+  M.active_timers[id] = nil
+  M.save_state()
+
+  return true
+end
+
+--- Cancel all active timers
+function M.cancel_all()
+  for id, _ in pairs(M.active_timers) do
+    vim.fn.timer_stop(id)
+  end
+  M.active_timers = {}
+  M.save_state()
+end
 return M

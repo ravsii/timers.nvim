@@ -10,7 +10,7 @@ local function active_timers_list()
   ---@type timer_list
   local timers = {}
 
-  for id, at in pairs(manager.active_timers) do
+  for id, at in pairs(manager.timers()) do
     table.insert(timers, { id = id, t = at })
   end
 
