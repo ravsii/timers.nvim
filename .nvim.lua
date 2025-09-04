@@ -7,6 +7,18 @@ local u = require("timer.unit")
 
 local map = vim.keymap.set
 
+map({ "n" }, "<leader>Ti", function()
+  local infinite_timer
+  infinite_timer = t.new(d.from(5 * u.SECOND), {
+    title = "Infinite",
+    message = "It never ends",
+    icon = "♾️",
+    on_finish = function() m.start_timer(infinite_timer) end,
+  })
+
+  m.start_timer(infinite_timer)
+end, { desc = "Test Infinite Timer" })
+
 map({ "n" }, "<leader>Tt", function()
   -- Duration as ms
   local break_duration = 5 * 1000 -- 5 seconds
@@ -57,7 +69,7 @@ end, { desc = "Test Pomodoro timer" })
 
 -- map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "Test Default Timer" })
 map({ "n" }, "<leader>Tl", function() m.start_timer(t.new(d.from(u.HOUR))) end, { desc = "Test Long Timer" })
-map({ "n" }, "<leader>Ta", require("timer.ui").active_timers, { desc = "Active timers" })
-map({ "n" }, "<leader>Tf", require("timer.ui.dashboard").show, { desc = "Fullscreen" })
-map({ "n" }, "<leader>Tc", require("timer.ui").cancel, { desc = "Cancel a timer" })
-map({ "n" }, "<leader>TC", require("timer.ui").cancel_all, { desc = "Cancel all timers" })
+map({ "n" }, "<leader>Ta", function() require("timer.ui").active_timers() end, { desc = "Active timers" })
+map({ "n" }, "<leader>Tf", function() require("timer.ui.dashboard").show() end, { desc = "Fullscreen" })
+map({ "n" }, "<leader>Tc", function() require("timer.ui").cancel() end, { desc = "Cancel a timer" })
+map({ "n" }, "<leader>TC", function() require("timer.ui").cancel_all() end, { desc = "Cancel all timers" })

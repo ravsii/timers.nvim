@@ -235,6 +235,6 @@ as well.
   - [x] Auto-resize float
   - [x] Make pretty (hl groups and such)
     - Will add some basic stuff, and polish later.
-  - [ ] Disable shrinking/expanding float
+  - [x] Disable shrinking/expanding float
   - [ ] More fonts, custom fonts
 - [ ] Interactive timer creation
