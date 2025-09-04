@@ -68,7 +68,7 @@ function D.show()
   if not timer then
     error("can't create a new background timer")
   end
-
+  --
   timer:start(
     0,
     config.dashboard.update_interval,
@@ -214,7 +214,7 @@ function D.build_lines(w, h)
   if closest then
     local big_timer = fonts.from_duration(closest:expire_in())
 
-    vim.list_extend(segments, into_segments(big_timer))
+    vim.list_extend(segments, into_segments(big_timer, "Statement"))
 
     table.insert(segments, {})
     table.insert(segments, {})
@@ -230,7 +230,7 @@ function D.build_lines(w, h)
   table.insert(segments, {})
   table.insert(segments, {
     { str = "q", hl = "Character" },
-    { str = " - quit", hl = "BlinkCmpKindReference" },
+    { str = " - quit" },
   })
 
   -- Center vertically and horizontally
