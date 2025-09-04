@@ -42,7 +42,7 @@ function M.start_timer(t)
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
     cancel_func()
     if t.on_finish then
-      t.on_finish(t)
+      t.on_finish(t, id)
     else
       vim.notify(t.message, t.log_level, notify_opts)
     end
@@ -52,7 +52,7 @@ function M.start_timer(t)
   M.save_state()
 
   if t.on_start then
-    t.on_start(t)
+    t.on_start(t, id)
   else
     local start_msg = "Timer for " .. t.duration:into_hms() .. " started"
     vim.notify(start_msg, t.log_level, notify_opts)

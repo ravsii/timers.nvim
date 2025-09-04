@@ -11,9 +11,9 @@ local unit = require("timer.unit")
 ---@field title? string
 ---@field log_level? vim.log.levels
 ---Can be used to replace the default callback
----@field on_start? fun(t: Timer)
+---@field on_start? fun(t: Timer, timer_id: integer)
 ---Can be used to replace the default callback
----@field on_finish? fun(t: Timer)
+---@field on_finish? fun(t: Timer, timer_id: integer)
 
 ---@class Timer:TimerOpts
 ---@field created number  -- os.time()
