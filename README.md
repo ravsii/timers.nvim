@@ -95,8 +95,10 @@ These options are used by default and you don't need to pass all of them.
     },
     dashboard = {
       -- Dashboard update interval, ms.
+      -- Timers don't show anything below seconds anyways.
       update_interval = 1000,
     },
+    debug = false -- you don't need it.
   },
 }
 ```
@@ -231,7 +233,7 @@ as well.
 - [ ] Fullscreen mode for current timer
   - [x] Add ability to see other timers
   - [x] Fix concatinate nil bug, when timer expires
-  - [ ] Fix bug with empty time, on creating new timer while in dashboard
+  - [x] Fix bug with empty time, on creating new timer while in dashboard
   - [x] Auto-resize float
   - [x] Make pretty (hl groups and such)
     - Will add some basic stuff, and polish later.

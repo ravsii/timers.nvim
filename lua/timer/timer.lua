@@ -2,11 +2,14 @@ local config = require("timer.config")
 local duration = require("timer.duration")
 local unit = require("timer.unit")
 
+---Represents a time returned by os.time()
+---@alias time number
+
 ---@class TimerOpts
 ---Message that shows up on timer finish.
 ---No effect, if on_start is passed.
 ---@field message? string
----Icon that will be passed to nvim.notify, false to don't pass anything
+---Icon that will be passed to nvim.notify, false to disable.
 ---@field icon? string | boolean
 ---@field title? string
 ---@field log_level? vim.log.levels
@@ -16,7 +19,11 @@ local unit = require("timer.unit")
 ---@field on_finish? fun(t: Timer, timer_id: integer)
 
 ---@class Timer:TimerOpts
----@field started number  -- os.time() in seconds, when it was started.
+---When the timer was created. "Created" here means when :new() was called, not
+---when manager.start_timer() was called.
+---@field created time
+---When the timer was started, using manager.start_timer().
+---@field started time?
 ---@field duration Duration
 local T = {}
 T.__index = T
@@ -35,8 +42,10 @@ function T.new(dur, opts)
 
   assert(getmetatable(dur) == duration, "Timer.new: duration must be a number or Duration")
 
+  local base_timer = { created = os.time(), duration = dur } ---@type Timer
+
   ---@type Timer
-  local timer = vim.tbl_extend("force", config.default_timer, opts, { duration = dur })
+  local timer = vim.tbl_extend("force", config.default_timer, opts, base_timer)
   local self = setmetatable(timer, T)
 
   return self

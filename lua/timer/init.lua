@@ -41,12 +41,12 @@ function M.start_timer(t)
   local cancel_func = function() M.cancel(id) end
 
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
-    cancel_func()
     if t.on_finish then
       t.on_finish(t, id)
     else
       vim.notify(t.message, t.log_level, notify_opts)
     end
+    cancel_func()
   end)
 
   t.started = os.time()
@@ -79,7 +79,7 @@ function M.get_closest_timer()
     local expire_at = t.started + t.duration:asSeconds()
     local remaining = expire_at - now
 
-    if remaining > 0 and remaining < minRemaining then
+    if remaining < minRemaining then
       minRemaining = remaining
       minTimer = t
     end
