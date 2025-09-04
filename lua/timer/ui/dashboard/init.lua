@@ -50,6 +50,8 @@ function D.show()
     height = h,
     row = r,
     col = c,
+    style = "minimal",
+    border = "rounded",
   })
 
   local wo = vim.wo[win]
@@ -87,7 +89,7 @@ function D.show()
   local c1, c2 = math.floor(w / 2 + 1), math.floor(h / 2)
   vim.api.nvim_win_set_cursor(win, { c2, c1 })
 
-  vim.api.nvim_create_autocmd("VimResized", {
+  vim.api.nvim_create_autocmd({ "VimResized", "WinResized" }, {
     group = group_dashboard,
     callback = function()
       if vim.api.nvim_win_is_valid(win) then
