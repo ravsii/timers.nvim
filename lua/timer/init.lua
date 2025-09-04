@@ -1,4 +1,5 @@
 local config = require("timer.config")
+local debug = require("timer.debug")
 local duration = require("timer.duration")
 local timer = require("timer.timer")
 local unit = require("timer.unit")
@@ -12,7 +13,6 @@ local M = {
   ---@type TimerTable
   ---Stores all active timers in a k-v pairs.
   ---Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them.
-  ---WARN: Please, do not modify it. Use approprioate timer functions instead.
   active_timers = {},
 }
 
@@ -48,8 +48,12 @@ function M.start_timer(t)
     end
   end)
 
+  t.started = os.time()
   M.active_timers[id] = t
   M.save_state()
+
+  debug.log("new timer added " .. vim.inspect(t))
+  debug.log("state after creation " .. vim.inspect(M.active_timers))
 
   if t.on_start then
     t.on_start(t, id)
@@ -71,7 +75,7 @@ function M.get_closest_timer()
   local now = os.time()
 
   for _, t in pairs(M.active_timers) do
-    local expire_at = t.created + t.duration:asSeconds()
+    local expire_at = t.started + t.duration:asSeconds()
     local remaining = expire_at - now
 
     if remaining > 0 and remaining < minRemaining then
@@ -143,7 +147,7 @@ function M.load_state()
   local cur_time = os.time()
 
   for _, opts in ipairs(old_timers) do
-    local sub = duration.from((cur_time - opts.created) * unit.SECOND)
+    local sub = duration.from((cur_time - opts.started) * unit.SECOND)
     local time_left = duration.from(opts.duration.value):sub(sub)
     if time_left.value > 0 then
       M.start_timer(timer.new(time_left, opts))

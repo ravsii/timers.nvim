@@ -16,7 +16,7 @@ local unit = require("timer.unit")
 ---@field on_finish? fun(t: Timer, timer_id: integer)
 
 ---@class Timer:TimerOpts
----@field created number  -- os.time()
+---@field started number  -- os.time() in seconds, when it was started.
 ---@field duration Duration
 local T = {}
 T.__index = T
@@ -35,11 +35,8 @@ function T.new(dur, opts)
 
   assert(getmetatable(dur) == duration, "Timer.new: duration must be a number or Duration")
 
-  local timer = vim.tbl_extend("force", config.default_timer, opts, { ---@type Timer
-    created = os.time(),
-    duration = dur,
-  })
-
+  ---@type Timer
+  local timer = vim.tbl_extend("force", config.default_timer, opts, { duration = dur })
   local self = setmetatable(timer, T)
 
   return self
@@ -48,7 +45,7 @@ end
 ---Returns remaining duration of a timer.
 ---@return Duration
 function T:expire_in()
-  local expire_at = self.created + self.duration:asSeconds()
+  local expire_at = self.started + self.duration:asSeconds()
   local remaining = expire_at - os.time()
   return duration.from(remaining * unit.SECOND)
 end

@@ -1,4 +1,5 @@
 local config = require("timer.config")
+local debug = require("timer.debug")
 local fonts = require("timer.ui.dashboard.fonts")
 local manager = require("timer")
 
@@ -209,6 +210,7 @@ function D.build_lines(w, h)
   local segments = {}
 
   local closest = manager.get_closest_timer()
+  debug.log(vim.inspect(closest))
   if closest then
     local big_timer = fonts.from_duration(closest:expire_in())
 
