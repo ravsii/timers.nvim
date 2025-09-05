@@ -95,7 +95,7 @@ These options are used by default and you don't need to pass all of them.
     },
     dashboard = {
       -- Dashboard update interval, ms.
-      -- Timers don't show anything below seconds anyways.
+      -- Timers don't show anything below seconds (ms, ns, etc) anyways.
       update_interval = 1000,
     },
     debug = false -- you don't need it.
