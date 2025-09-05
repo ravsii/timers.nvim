@@ -174,7 +174,7 @@ You can display the closest timer to expire in `lualine`:
       -- other secions
       lualine_y = { { "location" } },
       lualine_z = {
-        { require("timer.integrations.lualine").closest_timer },
+        { function() return require("timer.integrations.lualine").closest_timer() end },
         { 'progress' },
       },
     },
@@ -184,34 +184,11 @@ You can display the closest timer to expire in `lualine`:
 
 ## API
 
-This section is yet to be filled, but you can see some examples in `.nvim.lua`
-as well.
+This section will be filled later.
 
-### Recipes
-
-#### Pomodoro Timer with break
-
-```lua
-{
-  "<leader>Tp",
-  function()
-    local t = require("timer.timer")
-    local d = require("timer.duration")
-    local u = require("timer.unit")
-    local m = require("timer")
-
-    local break_timer = t.new(d.from(5 * u.MINUTE), "Break is over")
-    local pomodoro_timer = t.new(
-      d.from(25 * u.MINUTE),
-      "Pomodoro is over",
-      function() m.start_timer(break_timer) end
-    )
-
-    m.start_timer(pomodoro_timer)
-  end,
-  desc = "Start Pomodoro 25/5 timer",
-},
-```
+For now you can check [my config](https://github.com/ravsii/.dotfiles/blob/main/dot_config/nvim/lua/plugins/timer.lua)
+or see [.nvim.lua](./.nvim.lua). The former one is used for testing, so it's
+always up-to-date.
 
 ## TODO
 
@@ -239,4 +216,9 @@ as well.
     - Will add some basic stuff, and polish later.
   - [x] Disable shrinking/expanding float
   - [ ] More fonts, custom fonts
+  - [ ] Limited amount of timer showing on dashboard
+  - [ ] "... and X more" for the
+    rest
 - [ ] Interactive timer creation
+- [ ] Make API stable
+  - [ ] Better examples
