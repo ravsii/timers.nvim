@@ -128,6 +128,13 @@ function D.show()
       timer:close()
     end
   end, { buffer = buf })
+
+  -- cursor lock
+  local last_cursor = vim.api.nvim_win_get_cursor(0)
+  vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+    group = group_dashboard,
+    callback = function() vim.api.nvim_win_set_cursor(win, last_cursor) end,
+  })
 end
 
 ---@return integer width
