@@ -38,9 +38,9 @@ local function format_item_select(item)
 end
 
 ---@class Dashboard
----@field selected integer? current position of cursor
+---@field selected integer current position of cursor
 local D = {
-  selected = nil,
+  selected = 0,
 }
 
 local group_dashboard = vim.api.nvim_create_augroup("timer.nvim/dashboard", { clear = true })
@@ -92,8 +92,6 @@ function D.show()
 
   -- Show buffer in current window
   vim.api.nvim_win_set_buf(win, buf)
-  local c1, c2 = math.floor(w / 2 + 1), math.floor(h / 2)
-  vim.api.nvim_win_set_cursor(win, { c2, c1 })
 
   vim.api.nvim_create_autocmd({ "VimResized", "WinResized" }, {
     group = group_dashboard,
@@ -129,12 +127,31 @@ function D.show()
     end
   end, { buffer = buf })
 
+  local function move(i)
+    local timers = active_timers_list()
+    D.selected = math.max(1, math.min(#timers, D.selected + i)) -- clamp
+    local segments = D.draw(buf, w, h)
+
+    local timer_start_line = 0
+    for idx = 1, D.selected - 1 do
+      timer_start_line = timer_start_line + 1
+    end
+    timer_start_line = timer_start_line + (#segments > 0 and #segments - #timers or 0)
+    vim.api.nvim_win_set_cursor(win, { 1 + timer_start_line, 0 })
+  end
+
+  -- Map keys
+  vim.keymap.set("n", "k", function() move(-1) end, { buffer = buf })
+  vim.keymap.set("n", "<Up>", function() move(-1) end, { buffer = buf })
+  vim.keymap.set("n", "j", function() move(1) end, { buffer = buf })
+  vim.keymap.set("n", "<Down>", function() move(1) end, { buffer = buf })
+
   -- cursor lock
-  local last_cursor = vim.api.nvim_win_get_cursor(0)
-  vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-    group = group_dashboard,
-    callback = function() vim.api.nvim_win_set_cursor(win, last_cursor) end,
-  })
+  -- local last_cursor = vim.api.nvim_win_get_cursor(0)
+  -- vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+  --   group = group_dashboard,
+  --   callback = function() vim.api.nvim_win_set_cursor(win, { 20 + D.selected, math.floor(w / 2) }) end,
+  -- })
 end
 
 ---@return integer width
@@ -187,6 +204,8 @@ function D.draw(buf, w, h)
   end
 
   vim.bo[buf].modifiable = false
+
+  return lines
 end
 
 ---Converts a list of strings into lines of segments with the given highlight group.
@@ -233,6 +252,7 @@ function D.build_lines(w, h)
     table.insert(segments, {})
     table.insert(segments, {})
   end
+  local timer_height = #segments
 
   local timers = active_timers_list()
   --- sort by remaining first
