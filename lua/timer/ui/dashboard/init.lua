@@ -37,7 +37,11 @@ local function format_item_select(item)
     .. item.t:expire_in():into_hms()
 end
 
-local D = {}
+---@class Dashboard
+---@field selected integer? current position of cursor
+local D = {
+  selected = nil,
+}
 
 local group_dashboard = vim.api.nvim_create_augroup("timer.nvim/dashboard", { clear = true })
 
@@ -85,6 +89,7 @@ function D.show()
   )
 
   D.draw(buf, w, h)
+
   -- Show buffer in current window
   vim.api.nvim_win_set_buf(win, buf)
   local c1, c2 = math.floor(w / 2 + 1), math.floor(h / 2)
@@ -206,6 +211,8 @@ end
 ---@param h integer height
 ---@return lines lines
 function D.build_lines(w, h)
+  -- TODO: refactor this mess
+
   ---@type lines
   local segments = {}
 
@@ -221,19 +228,30 @@ function D.build_lines(w, h)
   end
 
   local timers = active_timers_list()
-  --- sort by remaining forst
+  --- sort by remaining first
   table.sort(timers, function(a, b) return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds() end)
   for _, item in pairs(timers) do
     table.insert(segments, { { str = format_item_select(item) } })
   end
 
-  table.insert(segments, {})
-  table.insert(segments, {
-    { str = "q", hl = "Character" },
-    { str = " - quit" },
-  })
+  local binds = {
+    { key = "k / ", text = "up" },
+    { key = "j / ", text = "down" },
+    { key = "d", text = "delete" },
+    { key = "q", text = "quit" },
+  }
+
+  local bindsSegment = {} ---@type line
+  for i, bind in ipairs(binds) do
+    if i > 1 then
+      bindsSegment[#bindsSegment + 1] = { str = " | ", hl = "Comment" }
+    end
+    bindsSegment[#bindsSegment + 1] = { str = bind.key, hl = "Character" }
+    bindsSegment[#bindsSegment + 1] = { str = " - " .. bind.text }
+  end
 
   -- Center vertically and horizontally
+  -- TODO: make 1 line of padding from both top and bottom
   local top_padding = math.floor((h - #segments) / 2)
   local content = {} ---@type lines
   for _ = 1, top_padding do
@@ -249,6 +267,15 @@ function D.build_lines(w, h)
       table.insert(content, line)
     end
   end
+  for _ = 1, top_padding - 2 do
+    table.insert(content, {})
+  end
+  local line = bindsSegment
+  local lw = line_width(line)
+  local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
+  table.insert(line, 1, { str = left_padding_chars })
+  table.insert(content, line)
+  table.insert(content, {})
 
   return content
 end
