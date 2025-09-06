@@ -1,7 +1,7 @@
 local config = require("timers.config")
 local debug = require("timers.debug")
 local fonts = require("timers.ui.dashboard.fonts")
-local manager = require("timers")
+local manager = require("timers.manager")
 
 ---@alias lines line[]
 ---@alias line segment[]
