@@ -6,7 +6,8 @@ and providing a **clean API** for other plugins or custom configurations.
 
 > [!WARNING]
 >
-> **This library is in active development!**
+> **This project is in active development. The API can change at any time until
+> a stable release.**
 
 ## Table Of Contents
 
