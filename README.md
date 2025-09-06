@@ -11,7 +11,7 @@ and providing a **clean API** for other plugins or custom configurations.
 ## Table Of Contents
 
 <!--toc:start-->
-- [timers.nvim](#timernvim)
+- [timers.nvim](#timersnvim)
   - [Table Of Contents](#table-of-contents)
   - [Why not X?](#why-not-x)
   - [Installation](#installation)
@@ -23,8 +23,6 @@ and providing a **clean API** for other plugins or custom configurations.
     - [Lualine](#lualine)
       - [Closest timer](#closest-timer)
   - [API](#api)
-    - [Recipes](#recipes)
-      - [Pomodoro Timer with break](#pomodoro-timer-with-break)
   - [TODO](#todo)
 <!--toc:end-->
 
