@@ -1,4 +1,4 @@
-local manager = require("timer")
+local manager = require("timers.manager")
 
 local notify_opts = { icon = "󱎫", title = "timers.nvim" }
 
