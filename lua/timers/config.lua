@@ -15,7 +15,9 @@ local defaults = {
   },
   persistent = false,
   dashboard = {
-    update_interval = 1000,
+    update_interval = 50,
+    width = 0.8,
+    height = 0.8,
   },
   debug = false,
 }

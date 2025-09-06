@@ -144,7 +144,8 @@ map({ "n" }, "<leader>TC",
 
 - `:TimerCancel <id>` - Cancel a specific timer by its ID.
 - `:TimerCancelAll` - Cancel all active timers.
-- `:TimerDashboard` - Shows Dashboard
+- `:TimerDashboard` - Shows Dashboard. It's far from being pretty, but
+generally works.
 ![Timer dashboard showcase](./pics/dashboard.jpg)
 
 ### Duration format
@@ -213,8 +214,10 @@ always up-to-date.
   - [x] Make pretty (hl groups and such)
     - Will add some basic stuff, and polish later.
   - [x] Disable shrinking/expanding float
+  - [x] Custom width and height
+  - [x] Extra actions (cancel, cancel_all)
   - [ ] More fonts, custom fonts
-  - [ ] Limited amount of timer showing on dashboard
+  - [ ] Limited amount of timers showing on dashboard
   - [ ] "... and X more" for the
     rest
 - [ ] Interactive timer creation
