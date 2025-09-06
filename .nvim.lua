@@ -1,7 +1,7 @@
 --- This contains some keybinds to quickly test stuff
 
 local d = require("timers.duration")
-local m = require("timer")
+local m = require("timers")
 local t = require("timers.timer")
 local u = require("timers.unit")
 
