@@ -1,6 +1,6 @@
-# timer.nvim
+# timers.nvim
 
-`timer.nvim` is a simple timer management plugin for Neovim that allows you to
+`timers.nvim` is a simple timer management plugin for Neovim that allows you to
 **run, track, and manage multiple timers**. Its core focus is **extensibility**
 and providing a **clean API** for other plugins or custom configurations.
 
@@ -11,7 +11,7 @@ and providing a **clean API** for other plugins or custom configurations.
 ## Table Of Contents
 
 <!--toc:start-->
-- [timer.nvim](#timernvim)
+- [timers.nvim](#timernvim)
   - [Table Of Contents](#table-of-contents)
   - [Why not X?](#why-not-x)
   - [Installation](#installation)
@@ -63,7 +63,7 @@ Using `lazy.nvim`:
 
 ```lua
 {
-  'ravsii/timer.nvim',
+  'ravsii/timers.nvim',
   -- See below, empty is fine
   opts = {},
 }
@@ -75,7 +75,7 @@ These options are used by default and you don't need to pass all of them.
 
 ```lua
 {
-  'ravsii/timer.nvim',
+  'ravsii/timers.nvim',
   ---@module "timer.config"
   ---@type Config
   opts = {
@@ -91,7 +91,7 @@ These options are used by default and you don't need to pass all of them.
       icon = "󱎫",
       log_level = vim.log.levels.INFO,
       message = "Timer Finished!",
-      title = "timer.nvim",
+      title = "timers.nvim",
     },
     dashboard = {
       -- Dashboard update interval, ms.
@@ -109,9 +109,9 @@ These are mostly examples, rather than something you should set.
 
 ```lua
 local m = require("timer") -- manager
-local t = require("timer.timer") -- timer
-local d = require("timer.duration") -- duration
-local u = require("timer.unit") -- duration units
+local t = require("timers.timer") -- timer
+local d = require("timers.duration") -- duration
+local u = require("timers.unit") -- duration units
 
 local map = vim.keymap.set
 
@@ -120,11 +120,11 @@ map({ "n" }, "<leader>Tt",
 map({ "n" }, "<leader>Tl",
     function() m.start_timer(t.new(d.from(u.HOUR))) end, { desc = "1h timer" })
 map({ "n" }, "<leader>Ta",
-    require("timer.ui").active_timers, { desc = "Active timers" })
+    require("timers.ui").active_timers, { desc = "Active timers" })
 map({ "n" }, "<leader>Tc",
-    require("timer.ui").cancel, { desc = "Cancel a timer" })
+    require("timers.ui").cancel, { desc = "Cancel a timer" })
 map({ "n" }, "<leader>TC",
-    require("timer.ui").cancel_all, { desc = "Cancel all timers" })
+    require("timers.ui").cancel_all, { desc = "Cancel all timers" })
 ```
 
 ## Commands
@@ -174,7 +174,7 @@ You can display the closest timer to expire in `lualine`:
       -- other secions
       lualine_y = { { "location" } },
       lualine_z = {
-        { function() return require("timer.integrations.lualine").closest_timer() end },
+        { function() return require("timers.integrations.lualine").closest_timer() end },
         { 'progress' },
       },
     },

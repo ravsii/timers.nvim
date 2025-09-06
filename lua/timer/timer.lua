@@ -1,6 +1,6 @@
-local config = require("timer.config")
-local duration = require("timer.duration")
-local unit = require("timer.unit")
+local config = require("timers.config")
+local duration = require("timers.duration")
+local unit = require("timers.unit")
 
 ---Represents a time returned by os.time()
 ---@alias time number

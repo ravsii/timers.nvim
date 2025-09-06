@@ -1,4 +1,4 @@
-local unit = require("timer.unit")
+local unit = require("timers.unit")
 ---@class Duration
 ---@field value integer Duration in milliseconds
 local Duration = {}

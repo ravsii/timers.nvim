@@ -1,6 +1,6 @@
 local manager = require("timer")
 
-local notify_opts = { icon = "󱎫", title = "timer.nvim" }
+local notify_opts = { icon = "󱎫", title = "timers.nvim" }
 
 ---@alias timer_list_item { id: number, t: Timer }
 ---@alias timer_list timer_list_item[],

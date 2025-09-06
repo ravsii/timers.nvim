@@ -1,10 +1,10 @@
-local config = require("timer.config")
-local debug = require("timer.debug")
-local duration = require("timer.duration")
-local timer = require("timer.timer")
-local unit = require("timer.unit")
+local config = require("timers.config")
+local debug = require("timers.debug")
+local duration = require("timers.duration")
+local timer = require("timers.timer")
+local unit = require("timers.unit")
 
-local state_file = vim.fn.stdpath("data") .. "/timer.nvim/timers.json"
+local state_file = vim.fn.stdpath("data") .. "/timers.nvim/timers.json"
 
 ---@alias TimerTable table<integer, Timer>
 
@@ -20,8 +20,8 @@ local M = {
 ---@param opts Config
 function M.setup(opts)
   config.setup(opts or {})
-  require("timer.commands").setup()
-  require("timer.autocmd").setup()
+  require("timers.commands").setup()
+  require("timers.autocmd").setup()
   M.load_state()
 end
 

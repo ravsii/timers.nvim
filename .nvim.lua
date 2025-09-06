@@ -1,9 +1,9 @@
 --- This contains some keybinds to quickly test stuff
 
-local d = require("timer.duration")
+local d = require("timers.duration")
 local m = require("timer")
-local t = require("timer.timer")
-local u = require("timer.unit")
+local t = require("timers.timer")
+local u = require("timers.unit")
 
 local map = vim.keymap.set
 
@@ -69,7 +69,7 @@ end, { desc = "Test Pomodoro timer" })
 
 -- map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "Test Default Timer" })
 map({ "n" }, "<leader>Tl", function() m.start_timer(t.new(d.from(u.HOUR))) end, { desc = "Test Long Timer" })
-map({ "n" }, "<leader>Ta", function() require("timer.ui").active_timers() end, { desc = "Active timers" })
-map({ "n" }, "<leader>Tf", function() require("timer.ui.dashboard").show() end, { desc = "Fullscreen" })
-map({ "n" }, "<leader>Tc", function() require("timer.ui").cancel() end, { desc = "Cancel a timer" })
-map({ "n" }, "<leader>TC", function() require("timer.ui").cancel_all() end, { desc = "Cancel all timers" })
+map({ "n" }, "<leader>Ta", function() require("timers.ui").active_timers() end, { desc = "Active timers" })
+map({ "n" }, "<leader>Tf", function() require("timers.ui.dashboard").show() end, { desc = "Fullscreen" })
+map({ "n" }, "<leader>Tc", function() require("timers.ui").cancel() end, { desc = "Cancel a timer" })
+map({ "n" }, "<leader>TC", function() require("timers.ui").cancel_all() end, { desc = "Cancel all timers" })

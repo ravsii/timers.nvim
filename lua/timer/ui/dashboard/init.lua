@@ -1,7 +1,7 @@
-local config = require("timer.config")
-local debug = require("timer.debug")
-local fonts = require("timer.ui.dashboard.fonts")
-local manager = require("timer")
+local config = require("timers.config")
+local debug = require("timers.debug")
+local fonts = require("timers.ui.dashboard.fonts")
+local manager = require("timers")
 
 ---@alias lines line[]
 ---@alias line segment[]
@@ -43,7 +43,7 @@ local D = {
   selected = 0,
 }
 
-local group_dashboard = vim.api.nvim_create_augroup("timer.nvim/dashboard", { clear = true })
+local group_dashboard = vim.api.nvim_create_augroup("timers.nvim/dashboard", { clear = true })
 
 function D.show()
   local buf = vim.api.nvim_create_buf(false, true)

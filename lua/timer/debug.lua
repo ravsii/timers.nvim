@@ -1,5 +1,5 @@
-local config = require("timer.config")
-local log_file = vim.fn.stdpath("data") .. "/timer.nvim/debug.log"
+local config = require("timers.config")
+local log_file = vim.fn.stdpath("data") .. "/timers.nvim/debug.log"
 
 ---@class Debug
 local D = {}

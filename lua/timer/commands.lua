@@ -1,7 +1,7 @@
-local dashboard = require("timer.ui.dashboard")
-local duration = require("timer.duration")
-local manager = require("timer")
-local timer = require("timer.timer")
+local dashboard = require("timers.ui.dashboard")
+local duration = require("timers.duration")
+local manager = require("timers")
+local timer = require("timers.timer")
 
 local M = {}
 
