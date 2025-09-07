@@ -190,6 +190,12 @@ For now you can check [my config](https://github.com/ravsii/.dotfiles/blob/main/
 or see [.nvim.lua](./.nvim.lua). The former one is used for testing, so it's
 always up-to-date.
 
+## Known bugs
+
+1. **** Cancel (c) keybind is currently not perfectly synced with the
+   dashboard ui, so it could potentially cancel a different timer. Use
+`:TimerCancel` instead.
+
 ## TODO
 
 - [x] Saving timers across sessions (configurable)
