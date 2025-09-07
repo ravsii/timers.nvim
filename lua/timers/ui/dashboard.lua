@@ -2,6 +2,7 @@ local config = require("timers.config")
 local fonts = require("timers.ui.dashboard.fonts")
 local manager = require("timers.manager")
 local ui = require("timers.ui")
+local utils = require("timers.ui.utils")
 
 ---@alias lines segments[]
 ---@alias segments segment[]
@@ -25,10 +26,9 @@ local function active_timers()
   end
 
   --- sort by remaining first
-  table.sort(
-    timers,
-    function(a, b) return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds() end
-  )
+  table.sort(timers, function(a, b)
+    return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds()
+  end)
 
   return timers
 end
@@ -94,7 +94,13 @@ function D:show()
     error("can't create a new background timer")
   end
 
-  self.timer:start(0, config.dashboard.update_interval, vim.schedule_wrap(function() D:draw() end))
+  self.timer:start(
+    0,
+    config.dashboard.update_interval,
+    vim.schedule_wrap(function()
+      D:draw()
+    end)
+  )
 
   -- Show buffer in current window
   vim.api.nvim_win_set_buf(self.win, self.buf)
@@ -117,25 +123,42 @@ function D:show()
     end,
   })
 
-  vim.api.nvim_create_autocmd(
-    "WinClosed",
-    { group = self.augroup, buffer = self.buf, callback = function() D:destroy() end }
-  )
+  vim.api.nvim_create_autocmd("WinClosed", {
+    group = self.augroup,
+    buffer = self.buf,
+    callback = function()
+      D:destroy()
+    end,
+  })
 
-  vim.keymap.set("n", "k", function() D:move_cursor(-1) end, { buffer = self.buf })
-  vim.keymap.set("n", "<Up>", function() D:move_cursor(-1) end, { buffer = self.buf })
-  vim.keymap.set("n", "j", function() D:move_cursor(1) end, { buffer = self.buf })
-  vim.keymap.set("n", "<Down>", function() D:move_cursor(1) end, { buffer = self.buf })
+  vim.keymap.set("n", "k", function()
+    D:move_cursor(-1)
+  end, { buffer = self.buf })
+  vim.keymap.set("n", "<Up>", function()
+    D:move_cursor(-1)
+  end, { buffer = self.buf })
+  vim.keymap.set("n", "j", function()
+    D:move_cursor(1)
+  end, { buffer = self.buf })
+  vim.keymap.set("n", "<Down>", function()
+    D:move_cursor(1)
+  end, { buffer = self.buf })
 
-  vim.keymap.set("n", "c", function() self:cancel_selected() end, { buffer = self.buf })
+  vim.keymap.set("n", "c", function()
+    self:cancel_selected()
+  end, { buffer = self.buf })
   vim.keymap.set("n", "C", ui.cancel_all, { buffer = self.buf })
 
-  vim.keymap.set("n", "q", function() D:destroy() end, { buffer = self.buf })
+  vim.keymap.set("n", "q", function()
+    D:destroy()
+  end, { buffer = self.buf })
 
   -- cursor lock
   vim.api.nvim_create_autocmd({ "CursorMoved" }, {
     group = self.augroup,
-    callback = function() D:move_cursor(0) end,
+    callback = function()
+      D:move_cursor(0)
+    end,
   })
 end
 
@@ -274,26 +297,7 @@ end
 ---@return integer row
 ---@return integer col
 function D:size()
-  local width = config.dashboard.width
-  if width < 1 then
-    width = math.floor(vim.o.columns * width)
-  end
-
-  local statusline_height = vim.o.laststatus > 1 and 1 or 0
-
-  -- Account for additional UI elements if present (e.g., Lualine)
-  -- Lualine typically uses `laststatus`, so `statusline_height` often suffices.
-  local main_height = vim.o.lines - vim.o.cmdheight - statusline_height
-
-  local height = config.dashboard.height
-  if height < 1 then
-    height = math.floor(main_height * height)
-  end
-
-  local row = math.floor((main_height - height) / 2)
-  local col = math.floor((vim.o.columns - width) / 2)
-
-  return width, height, row, col
+  return utils.size(config.dashboard.width, config.dashboard.height)
 end
 
 function D:cancel_selected()

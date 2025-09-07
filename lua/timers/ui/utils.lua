@@ -7,7 +7,7 @@ local U = {}
 ---@return integer height
 ---@return integer row
 ---@return integer col
-function U:size(width, height)
+function U.size(width, height)
   if width < 1 then
     width = math.floor(vim.o.columns * width)
   end
