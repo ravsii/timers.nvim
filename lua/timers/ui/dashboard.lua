@@ -297,7 +297,7 @@ end
 ---@return integer row
 ---@return integer col
 function D:size()
-  return utils.size(config.dashboard.width, config.dashboard.height)
+  return utils.calc_popup_size(config.dashboard.width, config.dashboard.height)
 end
 
 function D:cancel_selected()

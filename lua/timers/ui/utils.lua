@@ -1,14 +1,14 @@
 local U = {}
 
 ---Returns size and start coordinates.
----@param width integer Desired width
----@param height integer Desired height
+---@param width integer Desired width. Absolute if > 1, percentage if <= 1
+---@param height integer Desired height. Absolute if > 1, percentage if <= 1
 ---@return integer width
 ---@return integer height
 ---@return integer row
 ---@return integer col
-function U.size(width, height)
-  if width < 1 then
+function U.calc_popup_size(width, height)
+  if width <= 1 then
     width = math.floor(vim.o.columns * width)
   end
 
@@ -18,7 +18,7 @@ function U.size(width, height)
   -- Lualine typically uses `laststatus`, so `statusline_height` often suffices.
   local main_height = vim.o.lines - vim.o.cmdheight - statusline_height
 
-  if height < 1 then
+  if height <= 1 then
     height = math.floor(main_height * height)
   end
 
