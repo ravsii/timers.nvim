@@ -72,7 +72,7 @@ local D = {
 }
 
 function D:show()
-  -- self:reset()
+  self:reset()
 
   self.buf = vim.api.nvim_create_buf(false, true)
   local w, h, r, c = D:size()
@@ -85,14 +85,6 @@ function D:show()
     style = "minimal",
     border = "rounded",
   })
-
-  local wo = vim.wo[self.win]
-  wo.winfixwidth = true
-  wo.winfixheight = true
-  wo.number = false
-  wo.relativenumber = false
-  wo.cursorline = false
-  wo.colorcolumn = ""
 
   -- Timer for background updates
   self.timer = vim.uv.new_timer()
@@ -285,12 +277,18 @@ function D:size()
     width = math.floor(vim.o.columns * width)
   end
 
+  local statusline_height = vim.o.laststatus > 1 and 1 or 0
+
+  -- Account for additional UI elements if present (e.g., Lualine)
+  -- Lualine typically uses `laststatus`, so `statusline_height` often suffices.
+  local main_height = vim.o.lines - vim.o.cmdheight - statusline_height
+
   local height = config.dashboard.height
   if height < 1 then
-    height = math.floor(vim.o.lines * height)
+    height = math.floor(main_height * height)
   end
 
-  local row = math.floor((vim.o.lines - height) / 2)
+  local row = math.floor((main_height - height) / 2)
   local col = math.floor((vim.o.columns - width) / 2)
 
   return width, height, row, col
