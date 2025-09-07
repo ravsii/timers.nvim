@@ -84,6 +84,8 @@ function D:show()
     col = c,
     style = "minimal",
     border = "rounded",
+    title = " Dashboard ",
+    title_pos = "center",
   })
 
   -- Timer for background updates
