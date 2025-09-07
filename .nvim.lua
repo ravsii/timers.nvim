@@ -7,6 +7,13 @@ local u = require("timers.unit")
 
 local map = vim.keymap.set
 
+map(
+  { "n" },
+  "<leader>Tn",
+  function() require("timers.ui.form").open_form() end,
+  { desc = "Test New Form" }
+)
+
 map({ "n" }, "<leader>Ti", function()
   local infinite_timer
   infinite_timer = t.new(d.from(5 * u.SECOND), {
