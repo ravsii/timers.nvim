@@ -1,6 +1,7 @@
 local duration = require("timers.duration")
 local manager = require("timers.manager")
 local timer = require("timers.timer")
+local ui = require("timers.ui")
 
 local M = {}
 
@@ -32,15 +33,21 @@ function M.setup()
   vim.api.nvim_create_user_command(COMMANDS.Cancel, function(opts)
     local id = tonumber(opts.args)
     if id then
-      manager.cancel(id)
+      ui.cancel(id)
+    else
+      ui.cancel()
     end
-  end, { nargs = 1 })
+  end, { nargs = "?" })
 
-  vim.api.nvim_create_user_command(COMMANDS.CancelAll, function() manager.cancel_all() end, { nargs = 0 })
+  vim.api.nvim_create_user_command(
+    COMMANDS.CancelAll,
+    function() ui.cancel_all() end,
+    { nargs = 0 }
+  )
 
   vim.api.nvim_create_user_command(
     COMMANDS.Dashboard,
-    function() require("timers.ui.dashboard").show() end,
+    function() require("timers.ui.dashboard"):show() end,
     { nargs = 0 }
   )
 end
