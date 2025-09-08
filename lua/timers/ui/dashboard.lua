@@ -1,5 +1,5 @@
 local config = require("timers.config")
-local fonts = require("timers.ui.dashboard.fonts")
+local fonts = require("timers.ui.dashboard_fonts")
 local manager = require("timers.manager")
 local ui = require("timers.ui")
 local utils = require("timers.ui.utils")
