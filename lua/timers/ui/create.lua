@@ -1,17 +1,27 @@
 local config = require("timers.config")
+local duration = require("timers.duration")
+local manager = require("timers.manager")
+local timer = require("timers.timer")
+
+local notify_opts = { icon = "󱎫", title = "timers.nvim" }
 
 local F = {
   namespace = vim.api.nvim_create_namespace("timers.nvim/create"),
 }
 
 ---@alias fields field[]
----@alias field {title: string, placeholder: string}
+---@alias field {
+---   title: string,
+---   required:boolean?,
+---   placeholder: string,
+---   line: integer?,
+--- }
 
 ---@type fields
-local fields = {
-  { title = "Title", placeholder = config.default_timer.title },
-  { title = "Message", placeholder = config.default_timer.message },
-  { title = "Duration", placeholder = "Examples: 1500, 3s, 2.5m, 1h2m3s" },
+local base_fields = {
+  { title = "󱎫 Duration", required = true, placeholder = "1500, 3s, 2.5m, 1h2m3s" },
+  { title = "󰗴 Title", placeholder = config.default_timer.title },
+  { title = " Message", placeholder = config.default_timer.message },
 }
 
 local binds = {
@@ -23,7 +33,7 @@ local binds = {
 function F:create_timer()
   local buf = vim.api.nvim_create_buf(false, true)
   local width = 40
-  local height = 10
+  local height = #base_fields * 2 + 2
 
   local win = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
@@ -33,7 +43,7 @@ function F:create_timer()
     col = (vim.o.columns - width) / 2,
     style = "minimal",
     border = "rounded",
-    title = " User Form ",
+    title = " New Timer ",
     title_pos = "center",
     footer = F:make_footer(),
     footer_pos = "right",
@@ -46,66 +56,121 @@ function F:create_timer()
   vim.wo[win].scrolloff = 1
   vim.wo[win].wrap = true
 
-  local buf_lines = {}
-  for _ = 1, #fields + 1 do
+  -- extra empty line so virt_lines_above could work normally.
+  local buf_lines = { "" }
+  for _ = 1, #base_fields do
     vim.list_extend(buf_lines, { "" })
   end
 
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, buf_lines)
 
-  for i, field in pairs(fields) do
-    vim.api.nvim_buf_set_extmark(buf, F.namespace, i - 1, 0, {
-      virt_lines = {
-        { { field.title, "Title" } },
-      },
-      virt_lines_above = true,
-
-      virt_text = { { field.placeholder, "Comment" } },
-      virt_text_pos = "eol",
-    })
-  end
-
   -- Only these lines are editable
-  local fields = { 1, 2, 3 }
+  local fields = vim.tbl_deep_extend("force", {}, base_fields) ---@type fields
+  for i in ipairs(fields) do
+    fields[i].line = i
+  end
   local current_field = 1
 
+  local function draw()
+    vim.api.nvim_buf_clear_namespace(buf, self.namespace, 0, -1)
+
+    for i, field in pairs(base_fields) do
+      local opts = { ---@type vim.api.keyset.set_extmark
+        virt_lines = {
+          {
+            { field.title, "Title" },
+            { field.required and " required" or "", "Conditional" },
+          },
+        },
+        virt_lines_above = true,
+      }
+
+      local line_text = vim.api.nvim_buf_get_lines(buf, i, i + 1, false)[1] or ""
+
+      if line_text == "" then
+        opts = vim.tbl_deep_extend("keep", opts, {
+          virt_text = { { field.placeholder, "Comment" } },
+          virt_text_pos = "inline",
+        })
+      end
+
+      vim.api.nvim_buf_set_extmark(buf, self.namespace, i, 0, opts)
+    end
+  end
+  draw()
+
   local function focus_field(i)
-    vim.api.nvim_win_set_cursor(win, { i, 0 })
-    vim.cmd("normal! zb")
+    vim.api.nvim_win_set_cursor(win, { i + 1, 0 })
   end
 
-  -- Restrict cursor movement to allowed lines
-  vim.api.nvim_create_autocmd("CursorMovedI", {
+  vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
     buffer = buf,
     callback = function()
       local pos = vim.api.nvim_win_get_cursor(win)
-      local lnum = fields[current_field]
-      if pos[1] ~= lnum then
-        vim.api.nvim_win_set_cursor(win, { lnum, pos[2] })
+      local lnum = fields[current_field].line
+
+      if pos[1] + 1 ~= lnum then
+        local new_pos = vim.api.nvim_win_set_cursor(win, { lnum + 1, pos[2] })
       end
     end,
   })
 
+  vim.api.nvim_create_autocmd("InsertEnter", {
+    buffer = buf,
+    callback = function()
+      local pos = vim.api.nvim_win_get_cursor(win)
+      current_field = pos[1] - 1
+    end,
+  })
+
+  vim.api.nvim_create_autocmd({ "TextChangedI", "TextChanged" }, {
+    buffer = buf,
+    callback = function()
+      if vim.api.nvim_buf_line_count(buf) < #fields + 1 then
+        vim.api.nvim_buf_set_lines(buf, -1, -1, false, { "" })
+      end
+
+      draw()
+    end,
+  })
+
   -- Tab navigation
-  vim.keymap.set("i", "<Tab>", function()
+  vim.keymap.set({ "n", "i" }, "<Tab>", function()
     current_field = (current_field % #fields) + 1
     focus_field(current_field)
   end, { buffer = buf })
 
-  vim.keymap.set("i", "<S-Tab>", function()
+  vim.keymap.set({ "n", "i" }, "<S-Tab>", function()
     current_field = ((current_field - 2) % #fields) + 1
     focus_field(current_field)
   end, { buffer = buf })
 
   -- Submit
-  vim.keymap.set("i", "<CR>", function()
-    local results = {}
-    for _, lnum in ipairs(fields) do
-      local line = vim.api.nvim_buf_get_lines(buf, lnum - 1, lnum, false)[1]
-      results[#results + 1] = line
+  vim.keymap.set({ "n", "i" }, "<CR>", function()
+    local line = vim.api.nvim_buf_get_lines(buf, 1, -1, false)
+    local duration_str = line[1]
+
+    if duration_str == "" then
+      vim.notify("Duration can't be empty", vim.log.levels.ERROR, notify_opts)
+      return
     end
+
+    local d = duration.parse_format(duration_str)
+
+    local timer_opts = {} ---@type TimerOpts
+    local title = line[2] or ""
+    if title ~= "" then
+      timer_opts.title = title
+    end
+
+    local message = line[3] or ""
+    if message ~= "" then
+      timer_opts.message = title
+    end
+
+    manager.start_timer(timer.new(d, timer_opts))
+
     vim.api.nvim_win_close(win, true)
-    print("Submitted:", results[1], results[2])
   end, { buffer = buf })
 
   -- Cancel
