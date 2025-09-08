@@ -14,6 +14,8 @@ providing a clean API for other plugins or custom configurations.
 > [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 > notation.
 
+https://github.com/user-attachments/assets/92abc2e9-f9fa-46da-9a55-aa175fabcbc2
+
 ## Table Of Contents
 
 <!--toc:start-->
