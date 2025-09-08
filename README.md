@@ -14,7 +14,7 @@ providing a clean API for other plugins or custom configurations.
 > [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 > notation.
 
-https://github.com/user-attachments/assets/92abc2e9-f9fa-46da-9a55-aa175fabcbc2
+<https://github.com/user-attachments/assets/92abc2e9-f9fa-46da-9a55-aa175fabcbc2>
 
 ## Table Of Contents
 
@@ -398,3 +398,4 @@ You can display the closest timer to expire in
   - [ ] Limit the amount of timers showing on dashboard
 - [ ] Prelude-like import, because it's almost always required to import 4
   modules just to create and start a timer.
+- [ ] CI Release pipeline on new tag
