@@ -1,5 +1,8 @@
 local config = require("timers.config")
-local M = {}
+
+local F = {
+  namespace = vim.api.nvim_create_namespace("timers.nvim/create"),
+}
 
 ---@alias fields field[]
 ---@alias field {title: string, placeholder: string}
@@ -11,11 +14,18 @@ local fields = {
   { title = "Duration", placeholder = "Examples: 1500, 3s, 2.5m, 1h2m3s" },
 }
 
-function M.open_form()
+local binds = {
+  { "<Tab>", "next" },
+  { "<Enter>", "create" },
+  { "q", "quit" },
+}
+
+function F:create_timer()
   local buf = vim.api.nvim_create_buf(false, true)
   local width = 40
-  local height = 7
-  local opts = {
+  local height = 10
+
+  local win = vim.api.nvim_open_win(buf, true, {
     relative = "editor",
     width = width,
     height = height,
@@ -25,44 +35,43 @@ function M.open_form()
     border = "rounded",
     title = " User Form ",
     title_pos = "center",
-  }
-  local win = vim.api.nvim_open_win(buf, true, opts)
+    footer = F:make_footer(),
+    footer_pos = "right",
+  })
 
   -- Buffer setup
   vim.bo[buf].bufhidden = "wipe"
   vim.bo[buf].buftype = "nofile"
   vim.bo[buf].modifiable = true
+  vim.wo[win].scrolloff = 1
+  vim.wo[win].wrap = true
 
-  -- Lines: labels + values
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
-    "name1", -- label
-    "v1", -- input line
-    "name2", -- label
-    "v2", -- input line
-    "",
-    "[Press Enter to submit | Esc to cancel]",
-  })
+  local buf_lines = {}
+  for _ = 1, #fields + 1 do
+    vim.list_extend(buf_lines, { "" })
+  end
 
-  -- Highlight group for labels
-  vim.api.nvim_set_hl(0, "FormLabel", { fg = "#FFD700", bold = true })
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, buf_lines)
 
-  -- Overlays for labels
-  local ns = vim.api.nvim_create_namespace("form")
-  vim.api.nvim_buf_set_extmark(buf, ns, 0, 0, {
-    virt_text = { { "Name1", "Comment" } },
-    virt_text_pos = "overlay",
-  })
-  vim.api.nvim_buf_set_extmark(buf, ns, 2, 0, {
-    virt_text = { { "Name2", "Comment" } },
-    virt_text_pos = "overlay",
-  })
+  for i, field in pairs(fields) do
+    vim.api.nvim_buf_set_extmark(buf, F.namespace, i - 1, 0, {
+      virt_lines = {
+        { { field.title, "Title" } },
+      },
+      virt_lines_above = true,
+
+      virt_text = { { field.placeholder, "Comment" } },
+      virt_text_pos = "eol",
+    })
+  end
 
   -- Only these lines are editable
-  local fields = { 2, 4 }
+  local fields = { 1, 2, 3 }
   local current_field = 1
 
   local function focus_field(i)
-    vim.api.nvim_win_set_cursor(win, { fields[i], 0 })
+    vim.api.nvim_win_set_cursor(win, { i, 0 })
+    vim.cmd("normal! zb")
   end
 
   -- Restrict cursor movement to allowed lines
@@ -100,7 +109,7 @@ function M.open_form()
   end, { buffer = buf })
 
   -- Cancel
-  vim.keymap.set({ "i", "n" }, "<Esc>", function()
+  vim.keymap.set({ "n" }, "q", function()
     vim.api.nvim_win_close(win, true)
   end, { buffer = buf })
 
@@ -109,4 +118,22 @@ function M.open_form()
   vim.cmd("startinsert")
 end
 
-return M
+---@private
+function F.make_footer()
+  local footer = {}
+
+  for i, bind in pairs(binds) do
+    if i > 1 then
+      table.insert(footer, { " - ", "FloatBorder" })
+    end
+
+    vim.list_extend(footer, {
+      { bind[1], "Character" },
+      { " " .. bind[2], "Normal" },
+    })
+  end
+
+  return footer
+end
+
+return F

@@ -1,3 +1,4 @@
+local create = require("timers.ui.create")
 local manager = require("timers.manager")
 
 local notify_opts = { icon = "󱎫", title = "timers.nvim" }
@@ -34,6 +35,10 @@ end
 
 ---@class UI
 local M = {}
+
+function M.create_timer()
+  create:create_timer()
+end
 
 ---Shows the list of active timers
 function M.active_timers()

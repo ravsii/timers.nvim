@@ -7,12 +7,9 @@ local u = require("timers.unit")
 
 local map = vim.keymap.set
 
-map(
-  { "n" },
-  "<leader>Tn",
-  function() require("timers.ui.form").open_form() end,
-  { desc = "Test New Form" }
-)
+map({ "n" }, "<leader>Tn", function()
+  require("timers.ui").create_timer()
+end, { desc = "Test New Form" })
 
 map({ "n" }, "<leader>Ti", function()
   local infinite_timer
@@ -20,7 +17,9 @@ map({ "n" }, "<leader>Ti", function()
     title = "Infinite",
     message = "It never ends",
     icon = "♾️",
-    on_finish = function() m.start_timer(infinite_timer) end,
+    on_finish = function()
+      m.start_timer(infinite_timer)
+    end,
   })
 
   m.start_timer(infinite_timer)
@@ -35,7 +34,9 @@ map({ "n" }, "<leader>Tt", function()
     title = "Break",
     log_level = 1,
     icon = "⏾",
-    on_start = function() vim.notify("starting break timer") end,
+    on_start = function()
+      vim.notify("starting break timer")
+    end,
   })
 
   -- or, using a go-like api
@@ -46,7 +47,9 @@ map({ "n" }, "<leader>Tt", function()
     message = "Pomodoro is over",
     log_level = 4,
     icon = "",
-    on_finish = function() m.start_timer(break_timer) end,
+    on_finish = function()
+      m.start_timer(break_timer)
+    end,
   })
 
   m.start_timer(pomodoro_timer)
@@ -59,7 +62,9 @@ map({ "n" }, "<leader>TP", function()
     title = "Break",
     log_level = 1,
     icon = "⏾",
-    on_start = function() vim.notify("starting break timer") end,
+    on_start = function()
+      vim.notify("starting break timer")
+    end,
   })
 
   local ppomodoro_duration = d.from(25 * u.MINUTE)
@@ -68,40 +73,27 @@ map({ "n" }, "<leader>TP", function()
     message = "Pomodoro is over",
     log_level = 4,
     icon = "",
-    on_finish = function() m.start_timer(break_timer) end,
+    on_finish = function()
+      m.start_timer(break_timer)
+    end,
   })
 
   m.start_timer(pomodoro_timer)
 end, { desc = "Test Pomodoro timer" })
 
 -- map({ "n" }, "<leader>Tt", function() m.start_timer(t.new(1000)) end, { desc = "Test Default Timer" })
-map(
-  { "n" },
-  "<leader>Tl",
-  function() m.start_timer(t.new(d.from(u.HOUR))) end,
-  { desc = "Test Long Timer" }
-)
-map(
-  { "n" },
-  "<leader>Ta",
-  function() require("timers.ui").active_timers() end,
-  { desc = "Active timers" }
-)
-map(
-  { "n" },
-  "<leader>Td",
-  function() require("timers.ui.dashboard"):show() end,
-  { desc = "Dashboard" }
-)
-map(
-  { "n" },
-  "<leader>Tc",
-  function() require("timers.ui").cancel() end,
-  { desc = "Cancel a timer" }
-)
-map(
-  { "n" },
-  "<leader>TC",
-  function() require("timers.ui").cancel_all() end,
-  { desc = "Cancel all timers" }
-)
+map({ "n" }, "<leader>Tl", function()
+  m.start_timer(t.new(d.from(u.HOUR)))
+end, { desc = "Test Long Timer" })
+map({ "n" }, "<leader>Ta", function()
+  require("timers.ui").active_timers()
+end, { desc = "Active timers" })
+map({ "n" }, "<leader>Td", function()
+  require("timers.ui.dashboard"):show()
+end, { desc = "Dashboard" })
+map({ "n" }, "<leader>Tc", function()
+  require("timers.ui").cancel()
+end, { desc = "Cancel a timer" })
+map({ "n" }, "<leader>TC", function()
+  require("timers.ui").cancel_all()
+end, { desc = "Cancel all timers" })
