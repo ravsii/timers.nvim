@@ -28,7 +28,7 @@ and providing a **clean API** for other plugins or custom configurations.
     - [Recepes](#recepes)
       - [Pomodoro 25/5 timer](#pomodoro-255-timer)
       - [Infinite timer](#infinite-timer)
-      - [Closest timer for [`lualine.nvim`](https://github.com/nvim-lualine/lualine.nvim)](#closest-timer-for-lualinenvimhttpsgithubcomnvim-lualinelualinenvim)
+      - [Closest timer for `lualine.nvim`](#closest-timer-for-lualinenvim)
   - [Known bugs](#known-bugs)
   - [TODO](#todo)
 <!--toc:end-->
@@ -337,9 +337,10 @@ infinite_timer = t.new(d.from(5 * u.SECOND), {
 m.start_timer(infinite_timer)
 ```
 
-#### Closest timer for [`lualine.nvim`](https://github.com/nvim-lualine/lualine.nvim)
+#### Closest timer for lualine
 
-You can display the closest timer to expire in `lualine`:
+You can display the closest timer to expire in
+[`lualine.nvim`](https://github.com/nvim-lualine/lualine.nvim):
 
 ![lualine integration](./pics/lualine.jpg)
 
