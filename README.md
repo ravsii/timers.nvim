@@ -28,7 +28,7 @@ and providing a **clean API** for other plugins or custom configurations.
     - [Recepes](#recepes)
       - [Pomodoro 25/5 timer](#pomodoro-255-timer)
       - [Infinite timer](#infinite-timer)
-      - [Closest timer for `lualine.nvim`](#closest-timer-for-lualinenvim)
+      - [Closest timer for lualine](#closest-timer-for-lualine)
   - [Known bugs](#known-bugs)
   - [TODO](#todo)
 <!--toc:end-->
@@ -69,6 +69,7 @@ Using `lazy.nvim`:
 ```lua
 {
   'ravsii/timers.nvim',
+version = "*",
   -- See below, empty is fine
   opts = {},
 }
@@ -187,19 +188,19 @@ local Duration = require("timers.duration")
 local unit = require("timers.unit")
 
 -- Create durations
-local d1 = Duration.from(5000)         -- milliseconds
+local d1 = Duration.from(5000) -- milliseconds
 local d2 = Duration.from(5 * unit.SECOND)
 local d3 = Duration.parse_format("5h5m5s")
 
 -- Convert
-local ms = d3:asMilliseconds()         -- -> 18305000
-local sec = d3:asSeconds()             -- -> 18305
+local ms = d3:asMilliseconds() -- -> 18305000
+local sec = d3:asSeconds() -- -> 18305
 
 -- Arithmetic
-local diff = d3:sub(d1)                -- new Duration
+local diff = d3:sub(d1) -- new Duration
 
 -- Display
-local str = d3:into_hms()              -- "05:05:05"
+local str = d3:into_hms() -- "05:05:05"
 ```
 
 #### Timer
@@ -208,26 +209,28 @@ Timer module represents a single timer. It mostly provides helper functions,
 for running timers see [Manager](#manager)
 
 ```lua
-local t = require("timers.timer")
 local d = require("timers.duration")
+local t = require("timers.timer")
 local u = require("timers.unit")
 
 -- Create a timer (not started yet)
-local timer1 = t.new(d.from(5000))             -- 5 seconds
+local timer1 = t.new(d.from(5000)) -- 5 seconds
 -- Duration (first argument) can also be a number in milliseconds.
 local timer2 = t.new(5000, { message = "Done!" }) -- number in ms + options
 
 local pomodoro_timer = t.new(d.from(25 * u.MINUTE), {
--- Options:
--- message, icon, title, log_level, on_start, on_finish
+  -- Options:
+  -- message, icon, title, log_level, on_start, on_finish
   title = "Pomodoro",
   message = "Pomodoro is over",
   icon = "",
-  on_finish = function() m.start_timer(break_timer) end,
+  on_finish = function()
+    m.start_timer(break_timer)
+  end,
 })
 
 -- Access fields
-print(timer1.created)              -- creation time (os.time)
+print(timer1.created) -- creation time (os.time)
 print(timer1.duration:asSeconds()) -- duration in seconds
 
 -- Get remaining time after starting
@@ -246,9 +249,9 @@ print(remaining:asMilliseconds())
 ```lua
 local c = require("timers.config")
 local d = require("timers.duration")
+local m = require("timers.manager")
 local t = require("timers.timer")
 local u = require("timers.unit")
-local m = require("timers.manager")
 
 -- Create a timer
 local timer_obj = t.new(d.from(5000), { message = "Done!" })
@@ -259,8 +262,8 @@ local timer_obj = t.new(d.from(5000), { message = "Done!" })
 local id, cancel = m.start_timer(timer_obj)
 
 -- Cancel a timer
-cancel()        -- using the cancel function
-m.cancel(id)    -- or by ID directly
+cancel() -- using the cancel function
+m.cancel(id) -- or by ID directly
 
 -- Cancel all timers
 m.cancel_all()
@@ -302,7 +305,9 @@ local pomodoro_25_5 = function()
     title = "Pomodoro",
     message = "Pomodoro is over",
     icon = "",
-    on_finish = function() m.start_timer(break_timer) end,
+    on_finish = function()
+      m.start_timer(break_timer)
+    end,
   })
 
   m.start_timer(pomodoro_timer)
@@ -319,10 +324,10 @@ keys = {
 Creates a 5s timer, that just keeps restarting itself, until canceled.
 
 ```lua
-local t = require("timers.timer")
 local d = require("timers.duration")
-local u = require("timers.unit")
 local m = require("timers.manager")
+local t = require("timers.timer")
+local u = require("timers.unit")
 
 local infinite_timer -- new var here, so we can access it in on_finish
 infinite_timer = t.new(d.from(5 * u.SECOND), {
