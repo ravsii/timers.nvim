@@ -85,7 +85,6 @@ These options are used by default and you don't need to pass all of them.
     -- closed.
     persistent = false,
     -- Default values for new timers, if they weren't passed explicitly.
-    -- See type hints for all the options, or see TimerOpts.
     default_timer = {
       icon = "󱎫",
       log_level = vim.log.levels.INFO,
@@ -96,34 +95,32 @@ These options are used by default and you don't need to pass all of them.
       -- Dashboard update interval, ms.
       -- Timers don't show anything below seconds (ms, ns, etc) anyways.
       update_interval = 1000,
+      -- [0,1] for percentage of the screen, (1,∞) for an absolute value.
+      width = 0.8,
+      -- [0,1] for percentage of the screen, (1,∞) for an absolute value.
+      height = 0.8,
     },
-    debug = false -- you don't need it.
   },
 }
 ```
 
 ### Keymaps
 
-These are mostly examples, rather than something you should set.
+These are examples using `lazy.nvim` format.
+Also see [commands](#commands)
 
 ```lua
-local m = require("timer") -- manager
-local t = require("timers.timer") -- timer
-local d = require("timers.duration") -- duration
-local u = require("timers.unit") -- duration units
-
-local map = vim.keymap.set
-
-map({ "n" }, "<leader>Tt",
-    function() m.start_timer(t.new(1000)) end, { desc = "1s timer" })
-map({ "n" }, "<leader>Tl",
-    function() m.start_timer(t.new(d.from(u.HOUR))) end, { desc = "1h timer" })
-map({ "n" }, "<leader>Ta",
-    require("timers.ui").active_timers, { desc = "Active timers" })
-map({ "n" }, "<leader>Tc",
-    require("timers.ui").cancel, { desc = "Cancel a timer" })
-map({ "n" }, "<leader>TC",
-    require("timers.ui").cancel_all, { desc = "Cancel all timers" })
+{
+  "ravsii/timers.nvim",
+  keys = {
+    { "<leader>T", "", desc = "+timers" },
+    { "<leader>Ta", function() require("timers.ui").active_timers() end, desc = "Active timers" },
+    { "<leader>Td", function() require("timers.ui").dashboard() end, desc = "Dashboard" },
+    { "<leader>Tn", function() require("timers.ui").create_timer() end, desc = "New timer" },
+    { "<leader>Tc", function() require("timers.ui").cancel() end, desc = "Cancel a timer" },
+    { "<leader>TC", function() require("timers.ui").cancel_all() end, desc = "Cancel all timers" },
+  },
+}
 ```
 
 ## Commands

@@ -37,7 +37,11 @@ end
 local M = {}
 
 function M.create_timer()
-  create:create_timer()
+  require("timers.ui.create"):create_timer()
+end
+
+function M.dashboard()
+  require("timers.ui.dashboard"):show()
 end
 
 ---Shows the list of active timers
