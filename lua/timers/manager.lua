@@ -30,7 +30,9 @@ function M.start_timer(t)
   local id
 
   local notify_opts = { title = t.title, icon = t.icon }
-  local cancel_func = function() M.cancel(id) end
+  local cancel_func = function()
+    M.cancel(id)
+  end
 
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
     if t.on_finish then
@@ -82,8 +84,11 @@ end
 
 ---Returns all active timers.
 ---@return TimerTable timers
-function M.timers() return vim.tbl_deep_extend("force", {}, M.active_timers) end
+function M.timers()
+  return vim.tbl_deep_extend("force", {}, M.active_timers)
+end
 
+---@private
 function M.save_state()
   if not config.persistent then
     return
@@ -106,6 +111,7 @@ function M.save_state()
   vim.fn.writefile({ data }, state_file)
 end
 
+---@private
 function M.load_state()
   if not config.persistent then
     return

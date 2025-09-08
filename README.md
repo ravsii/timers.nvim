@@ -20,10 +20,16 @@ and providing a **clean API** for other plugins or custom configurations.
     - [Keymaps](#keymaps)
   - [Commands](#commands)
     - [Duration format](#duration-format)
-  - [Integrations](#integrations)
-    - [Lualine](#lualine)
-      - [Closest timer](#closest-timer)
   - [API](#api)
+    - [Modules](#modules)
+      - [Duration and Units](#duration-and-units)
+      - [Timer](#timer)
+      - [Manager](#manager)
+    - [Recepes](#recepes)
+      - [Pomodoro 25/5 timer](#pomodoro-255-timer)
+      - [Infinite timer](#infinite-timer)
+      - [Closest timer for [`lualine.nvim`](https://github.com/nvim-lualine/lualine.nvim)](#closest-timer-for-lualinenvimhttpsgithubcomnvim-lualinelualinenvim)
+  - [Known bugs](#known-bugs)
   - [TODO](#todo)
 <!--toc:end-->
 
@@ -166,11 +172,111 @@ mainly serves as a proof of concept.
 
 ## API
 
-This section will be filled later.
+This section can be out of date, so it's always best to check the source code,
+or do a `require` and check LSP autocomplete suggestions and docs. Most of
+functions have luadocs and custom types, which are always up to date.
 
-For now you can check [my config](https://github.com/ravsii/.dotfiles/blob/main/dot_config/nvim/lua/plugins/timer.lua)
-or see [.nvim.lua](./.nvim.lua). The former one is used for testing, so it's
-always up-to-date.
+### Modules
+
+#### Duration and Units
+
+Durations are inspired by Go's `time.Duration`, that's very easy to work with.
+
+```lua
+local Duration = require("timers.duration")
+local unit = require("timers.unit")
+
+-- Create durations
+local d1 = Duration.from(5000)         -- milliseconds
+local d2 = Duration.from(5 * unit.SECOND)
+local d3 = Duration.parse_format("5h5m5s")
+
+-- Convert
+local ms = d3:asMilliseconds()         -- -> 18305000
+local sec = d3:asSeconds()             -- -> 18305
+
+-- Arithmetic
+local diff = d3:sub(d1)                -- new Duration
+
+-- Display
+local str = d3:into_hms()              -- "05:05:05"
+```
+
+#### Timer
+
+Timer module represents a single timer. It mostly provides helper functions,
+for running timers see [Manager](#manager)
+
+```lua
+local t = require("timers.timer")
+local d = require("timers.duration")
+local u = require("timers.unit")
+
+-- Create a timer (not started yet)
+local timer1 = t.new(d.from(5000))             -- 5 seconds
+-- Duration (first argument) can also be a number in milliseconds.
+local timer2 = t.new(5000, { message = "Done!" }) -- number in ms + options
+
+local pomodoro_timer = t.new(d.from(25 * u.MINUTE), {
+-- Options:
+-- message, icon, title, log_level, on_start, on_finish
+  title = "Pomodoro",
+  message = "Pomodoro is over",
+  icon = "",
+  on_finish = function() m.start_timer(break_timer) end,
+})
+
+-- Access fields
+print(timer1.created)              -- creation time (os.time)
+print(timer1.duration:asSeconds()) -- duration in seconds
+
+-- Get remaining time after starting
+local remaining = timer1:expire_in()
+print(remaining:asMilliseconds())
+```
+
+**Notes:**
+
+- `expire_in()` returns a new `Duration` representing time left. Works only if
+  the timer was started, using `TimerManager.start_timer()`
+- Optional callbacks (`on_start`, `on_finish`) override default behavior.
+
+#### Manager
+
+```lua
+local c = require("timers.config")
+local d = require("timers.duration")
+local t = require("timers.timer")
+local u = require("timers.unit")
+local m = require("timers.manager")
+
+-- Create a timer
+local timer_obj = t.new(d.from(5000), { message = "Done!" })
+
+-- Start the timer
+-- It returns id and cancel-func, so you can cancel your timer somewhere
+-- else
+local id, cancel = m.start_timer(timer_obj)
+
+-- Cancel a timer
+cancel()        -- using the cancel function
+m.cancel(id)    -- or by ID directly
+
+-- Cancel all timers
+m.cancel_all()
+
+-- Query timers
+local active_count = m.active_timers_num()
+local closest_timer = m.get_closest_timer()
+local all_timers = m.timers()
+```
+
+**Notes:**
+
+- `start_timer()` returns a
+- `get_closest_timer()` returns the first timer closest to expiration.
+- There are several `@private` functions and fields, don't directly
+interact with them
 
 ### Recepes
 
@@ -213,6 +319,11 @@ keys = {
 Creates a 5s timer, that just keeps restarting itself, until canceled.
 
 ```lua
+local t = require("timers.timer")
+local d = require("timers.duration")
+local u = require("timers.unit")
+local m = require("timers.manager")
+
 local infinite_timer -- new var here, so we can access it in on_finish
 infinite_timer = t.new(d.from(5 * u.SECOND), {
   title = "Infinite",
