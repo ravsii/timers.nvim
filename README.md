@@ -53,7 +53,7 @@ custom workflows, maybe try ours.
 
 Also, this is my first Neovim plugin. Part of the goal here is just to
 experiment with Neovim API and build something without relying on something
-like [plenary](https://github.com/nvim-lua/plenary.nvim) or
+pre-built, like [plenary](https://github.com/nvim-lua/plenary.nvim) or
 [nui](https://github.com/MunifTanjim/nui.nvim)
 
 ## Installation
@@ -107,7 +107,7 @@ These options are used by default and you don't need to pass all of them.
 ### Keymaps
 
 These are examples using `lazy.nvim` format.
-Also see [commands](#commands)
+If you like command-style  (`<cmd>TimersDashboard<cr>`) binds more,  see: [commands](#commands)
 
 ```lua
 {
@@ -125,26 +125,37 @@ Also see [commands](#commands)
 
 ## Commands
 
-- `:TimerStart <duration> <message?>` - Starts a new timer.
+- `:TimersCreate` - Like `:TimersStart`, but with interactive UI.
+![New timer showcase](./pics/create.jpg)
+- `:TimersStart <duration> <message?>` - Starts a new timer.
   - `<duration>`: required, e.g. `10s`, `2m`, `1h30m`. See [Duration
   format](#duration-format)
-  - `<message?>`: optional
+  - `<message?>`: optional. Everything after the first space is treated as a
+  message.
 
 ```vim
-:TimerStart 10                          " 10 milliseconds
-:TimerStart 1500 Quick ping             " 1500 milliseconds (1.5s)
-:TimerStart 45s Quick notification      " 45 seconds
-:TimerStart 3m Take a short break!      " 3 minutes
-:TimerStart 3.5m Stretch now!           " 3 minutes 30 seconds
-:TimerStart 1.75h Long task reminder    " 1 hour 45 minutes
-:TimerStart 10h29m59s Complex Time      " 10 hours 29 minutes and 59 seconds
+:TimersStart 10                          " 10 milliseconds
+:TimersStart 1500 Quick ping             " 1500 milliseconds (1.5s)
+:TimersStart 45s Quick notification      " 45 seconds
+:TimersStart 3m Take a short break!      " 3 minutes
+:TimersStart 3.5m Stretch now!           " 3 minutes 30 seconds
+:TimersStart 1.75h Long task reminder    " 1 hour 45 minutes
+:TimersStart 10h29m59s Complex Time      " 10 hours 29 minutes and 59 seconds
 ```
 
-- `:TimerCancel <id>` - Cancel a specific timer by its ID.
+- `:TimersActive` - Shows active timers (`vim.ui.select`)
+- `:TimersCancel <id?>` - Cancel a specific timer by its ID.
+  - `<id?>`: optional. If no id given, it'll open up in interactive UI
+  (`vim.ui.select`)
 - `:TimerCancelAll` - Cancel all active timers.
-- `:TimerDashboard` - Shows Dashboard. It's far from being pretty, but
-generally works.
-![Timer dashboard showcase](./pics/dashboard.jpg)
+- `:TimerDashboard` — Opens the dashboard. This is still a work in progress and
+mainly serves as a proof of concept.
+![Dashboard showcase](./pics/dashboard.jpg)
+
+> [!NOTE]
+>
+> All these commands have a lua equivalent, that could be found using
+> `require("timers.ui")`
 
 ### Duration format
 
@@ -153,11 +164,69 @@ generally works.
 - `h` → hours
 - Numbers without a unit are treated as milliseconds
 
-## Integrations
+## API
 
-### Lualine
+This section will be filled later.
 
-#### Closest timer
+For now you can check [my config](https://github.com/ravsii/.dotfiles/blob/main/dot_config/nvim/lua/plugins/timer.lua)
+or see [.nvim.lua](./.nvim.lua). The former one is used for testing, so it's
+always up-to-date.
+
+### Recepes
+
+#### Pomodoro 25/5 timer
+
+```lua
+local pomodoro_25_5 = function()
+  local t = require("timers.timer")
+  local d = require("timers.duration")
+  local u = require("timers.unit")
+  local m = require("timers.manager")
+
+  local break_duration = d.from(5 * u.MINUTE)
+  local break_timer = t.new(break_duration, {
+    message = "Break is over",
+    title = "Break",
+    log_level = vim.log.levels.WARN,
+    icon = "⏾",
+  })
+
+  local ppomodoro_duration = d.from(25 * u.MINUTE)
+  local pomodoro_timer = t.new(ppomodoro_duration, {
+    title = "Pomodoro",
+    message = "Pomodoro is over",
+    icon = "",
+    on_finish = function() m.start_timer(break_timer) end,
+  })
+
+  m.start_timer(pomodoro_timer)
+end
+
+-- and in keys you can now use
+keys = {
+  { "<leader>Tp", pomodoro_25_5, desc = "Start Pomodoro 25/5 timer" },
+}
+```
+
+#### Infinite timer
+
+Creates a 5s timer, that just keeps restarting itself, until canceled.
+
+```lua
+local infinite_timer -- new var here, so we can access it in on_finish
+infinite_timer = t.new(d.from(5 * u.SECOND), {
+  title = "Infinite",
+  message = "It never ends",
+  icon = "♾️",
+  on_finish = function()
+    m.start_timer(infinite_timer)
+  end,
+})
+
+m.start_timer(infinite_timer)
+```
+
+#### Closest timer for [`lualine.nvim`](https://github.com/nvim-lualine/lualine.nvim)
 
 You can display the closest timer to expire in `lualine`:
 
@@ -169,7 +238,6 @@ You can display the closest timer to expire in `lualine`:
   opts = {
     sections = {
       -- other secions
-      lualine_y = { { "location" } },
       lualine_z = {
         { function() return require("timers.integrations.lualine").closest_timer() end },
         { 'progress' },
@@ -179,51 +247,20 @@ You can display the closest timer to expire in `lualine`:
 }
 ```
 
-## API
-
-This section will be filled later.
-
-For now you can check [my config](https://github.com/ravsii/.dotfiles/blob/main/dot_config/nvim/lua/plugins/timer.lua)
-or see [.nvim.lua](./.nvim.lua). The former one is used for testing, so it's
-always up-to-date.
-
 ## Known bugs
 
 1. **** Cancel (c) keybind is currently not perfectly synced with the
    dashboard ui, so it could potentially cancel a different timer. Use
-`:TimerCancel` instead.
+`:TimersCancel` instead.
 
 ## TODO
 
-- [x] Saving timers across sessions (configurable)
-- [x] More options for timers
-  - [x] Callbacks
-  - [x] Custom icon
-  - [x] Custom title
-  - [x] Custom messages
-- [x] Integration with various `vim.notify` plugins (snacks, vim-notifier)
 - [x] Picker integrations
   - [x] `vim.ui.select`
   - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
   everything I need, and its api is widely supported across multiple plugins.
-- [x] Commands
-  - [x] `TimerStart`
-  - [x] `TimerCancel`
-  - [x] `TimerCancelAll`
 - [ ] Fullscreen mode for current timer
-  - [x] Add ability to see other timers
-  - [x] Fix concatinate nil bug, when timer expires
-  - [x] Fix bug with empty time, on creating new timer while in dashboard
-  - [x] Auto-resize float
-  - [x] Make pretty (hl groups and such)
-    - Will add some basic stuff, and polish later.
-  - [x] Disable shrinking/expanding float
-  - [x] Custom width and height
-  - [x] Extra actions (cancel, cancel_all)
   - [ ] More fonts, custom fonts
-  - [ ] Limited amount of timers showing on dashboard
   - [ ] "... and X more" for the
+  - [ ] Limited amount of timers showing on dashboard
     rest
-- [ ] Interactive timer creation
-- [ ] Make API stable
-  - [ ] Better examples
