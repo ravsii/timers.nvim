@@ -171,6 +171,7 @@ function F:create_timer()
     manager.start_timer(timer.new(d, timer_opts))
 
     vim.api.nvim_win_close(win, true)
+    vim.cmd("stopinsert")
   end, { buffer = buf })
 
   -- Cancel
