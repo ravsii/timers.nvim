@@ -89,7 +89,7 @@ These options are used by default and you don't need to pass all of them.
 ```lua
 {
   'ravsii/timers.nvim',
-  ---@module "timer.config"
+  ---@module "timers.config"
   ---@type Config
   opts = {
     -- Save timers across reloads / sessions.
