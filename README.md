@@ -69,7 +69,7 @@ Using `lazy.nvim`:
 ```lua
 {
   'ravsii/timers.nvim',
-version = "*",
+  version = "*", -- use latest stable release
   -- See below, empty is fine
   opts = {},
 }
