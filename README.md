@@ -1,13 +1,18 @@
 # timers.nvim
 
 `timers.nvim` is a simple timer management plugin for Neovim that allows you to
-**run, track, and manage multiple timers**. Its core focus is **extensibility**
-and providing a **clean API** for other plugins or custom configurations.
+run, track, and manage multiple timers. Its core focus is extensibility and
+providing a clean API for other plugins or custom configurations.
 
 > [!WARNING]
 >
-> **This project is in active development. The API can change at any time until
-> a stable release.**
+> **This project is under active development.**
+>
+> While we prioritize backwards compatibility, the API is not guaranteed to be
+> stable yet. Until version `v1`, breaking changes may occur, but they will
+> only appear in minor releases and will be clearly using a `!` as specified in
+> [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+> notation.
 
 ## Table Of Contents
 
@@ -42,12 +47,12 @@ Yes, there are already Neovim timer plugins out there — for example:
 - [timerly](https://github.com/nvzone/timerly)
 
 Each focuses on a different aspect of timers, whether it’s specific presets,
-timer management, or something else.
+timer management, or visual representation.
 
 So why make another one?
 
-We wanted to explore a slightly different approach: focusing on hackability and
-providing a good API that other plugins can build on. Instead of being a
+We wanted to explore a slightly different approach: focusing on extensibility
+and providing a good API so that other plugins can build on. Instead of being a
 complete opinionated timer solution, this plugin is designed to be extensible
 and easy to integrate.
 
@@ -58,7 +63,7 @@ custom workflows, maybe try ours.
 ---
 
 Also, this is my first Neovim plugin. Part of the goal here is just to
-experiment with Neovim API and build something without relying on something
+experiment with Neovim API and build a plugin without relying on something
 pre-built, like [plenary](https://github.com/nvim-lua/plenary.nvim) or
 [nui](https://github.com/MunifTanjim/nui.nvim)
 
@@ -134,6 +139,7 @@ If you like command-style  (`<cmd>TimersDashboard<cr>`) binds more,  see: [comma
 
 - `:TimersCreate` - Like `:TimersStart`, but with interactive UI.
 ![New timer showcase](./pics/create.jpg)
+
 - `:TimersStart <duration> <message?>` - Starts a new timer.
   - `<duration>`: required, e.g. `10s`, `2m`, `1h30m`. See [Duration
   format](#duration-format)
@@ -173,9 +179,11 @@ mainly serves as a proof of concept.
 
 ## API
 
-This section can be out of date, so it's always best to check the source code,
-or do a `require` and check LSP autocomplete suggestions and docs. Most of
-functions have luadocs and custom types, which are always up to date.
+This section can be out of date, as it's very time-consuming to maintain.
+
+It's always best to check the source code, or do a `require` and check LSP
+autocomplete suggestions and docs. Most of the functions have luadocs and
+custom types, which are always up to date.
 
 ### Modules
 
@@ -184,13 +192,13 @@ functions have luadocs and custom types, which are always up to date.
 Durations are inspired by Go's `time.Duration`, that's very easy to work with.
 
 ```lua
-local Duration = require("timers.duration")
-local unit = require("timers.unit")
+local d = require("timers.duration")
+local u = require("timers.unit")
 
 -- Create durations
-local d1 = Duration.from(5000) -- milliseconds
-local d2 = Duration.from(5 * unit.SECOND)
-local d3 = Duration.parse_format("5h5m5s")
+local d1 = d.from(5000) -- milliseconds
+local d2 = d.from(5 * u.SECOND)
+local d3 = d.parse_format("5h5m5s")
 
 -- Convert
 local ms = d3:asMilliseconds() -- -> 18305000
@@ -206,7 +214,9 @@ local str = d3:into_hms() -- "05:05:05"
 #### Timer
 
 Timer module represents a single timer. It mostly provides helper functions,
-for running timers see [Manager](#manager)
+like getting timer's state, opts, etc.
+
+For running timers see [Manager](#manager)
 
 ```lua
 local d = require("timers.duration")
@@ -246,6 +256,10 @@ print(remaining:asMilliseconds())
 
 #### Manager
 
+The Manager is the core of this project: it starts and cancels timers, tracks
+their state, and reports active timers. It also handles persistence across
+restarts under the hood, effectively serving as the timers’ runtime.
+
 ```lua
 local c = require("timers.config")
 local d = require("timers.duration")
@@ -276,10 +290,8 @@ local all_timers = m.timers()
 
 **Notes:**
 
-- `start_timer()` returns a
-- `get_closest_timer()` returns the first timer closest to expiration.
 - There are several `@private` functions and fields, don't directly
-interact with them
+interact with them, as these don't have the backwards compatibility promise.
 
 ### Recepes
 
@@ -377,7 +389,10 @@ You can display the closest timer to expire in
   - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
   everything I need, and its api is widely supported across multiple plugins.
 - [ ] Fullscreen mode for current timer
-  - [ ] More fonts, custom fonts
+  - [ ] Fonts
+    - [ ] More built-in fonts
+    - [ ] Allow passing custom fonts via config
   - [ ] "... and X more" for the
-  - [ ] Limited amount of timers showing on dashboard
-    rest
+  - [ ] Limit the amount of timers showing on dashboard
+- [ ] Prelude-like import, because it's almost always required to import 4
+  modules just to create and start a timer.
