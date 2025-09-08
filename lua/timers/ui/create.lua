@@ -165,7 +165,7 @@ function F:create_timer()
 
     local message = line[3] or ""
     if message ~= "" then
-      timer_opts.message = title
+      timer_opts.message = message
     end
 
     manager.start_timer(timer.new(d, timer_opts))
