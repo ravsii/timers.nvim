@@ -9,10 +9,7 @@ providing a clean API for other plugins or custom configurations.
 > **This project is under active development.**
 >
 > While we prioritize backwards compatibility, the API is not guaranteed to be
-> stable yet. Until version `v1`, breaking changes may occur, but they will
-> only appear in minor releases and will be clearly using a `!` as specified in
-> [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-> notation.
+> stable yet. Until version `v1`, breaking changes may occur, but only in minor releases. Such changes will always be marked with a `!` following [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) notation.
 
 <https://github.com/user-attachments/assets/92abc2e9-f9fa-46da-9a55-aa175fabcbc2>
 
