@@ -10,11 +10,13 @@ local utils = require("timers.ui.utils")
 
 ---@class DashboardOpts
 ---Interval (in milliseconds) at which the dashboard state is updated.
----@field update_interval integer
+---@field update_interval integer?
 ---[0,1] for percentage of the screen, (1,∞) for an absolute value.
----@field width number
+---@field width number?
 ---[0,1] for percentage of the screen, (1,∞) for an absolute value.
----@field height number
+---@field height number?
+---Font to use
+---@field font string?
 
 ---@private
 ---@return timer_list timers List of active timers, sorted by expiration

@@ -21,6 +21,7 @@ providing a clean API for other plugins or custom configurations.
   - [Why not X?](#why-not-x)
   - [Installation](#installation)
     - [Options](#options)
+      - [Dashboard fonts](#dashboard-fonts)
     - [Keymaps](#keymaps)
   - [Commands](#commands)
     - [Duration format](#duration-format)
@@ -110,10 +111,50 @@ These options are used by default and you don't need to pass all of them.
       width = 0.8,
       -- [0,1] for percentage of the screen, (1,∞) for an absolute value.
       height = 0.8,
+      font = ""
     },
   },
 }
 ```
+
+#### Dashboard fonts
+<!-- markdownlint-disable MD033 -->
+
+<details>
+<summary>DiamFont</summary>
+<pre>
+▄ ▄▄▄▄   ▄▄▄▄ ▄  ▗▖   ▄▄▄▄ ▄▄▄▄
+█    █ █    █ █  ▐▌ █ █    █     ▄▄▄
+█ █▀▀▀   ▀▀▀█ ▀▀▀▜▌   ▀▀▀█ █▀▀█ ▀▄▄
+█ █▄▄▄ █ ▄▄▄█    ▐▌ █ ▄▄▄█ █▄▄█ ▄▄▄▀
+</pre>
+</details>
+
+<details>
+<summary>Terrace</summary>
+<pre>
+  ░██    ░██████       ░██████     ░████       ░████████  ░██████
+░████   ░██   ░██     ░██   ░██   ░██ ██       ░██       ░██   ░██
+  ░██         ░██           ░██  ░██  ██       ░███████  ░██        ░███████  
+  ░██     ░█████  ░██   ░█████  ░██   ██   ░██       ░██ ░███████  ░██
+  ░██    ░██                ░██ ░█████████     ░██   ░██ ░██   ░██  ░███████  
+  ░██   ░██           ░██   ░██      ░██       ░██   ░██ ░██   ░██        ░██
+░██████ ░████████ ░██  ░██████       ░██   ░██  ░██████   ░██████   ░███████  
+</pre>
+</details>
+
+<details>
+<summary>tmplr</summary>
+<pre>
+┓┏┓ ┏┓┃┃ ┏━┏┓
+┃┏┛• ┫┗╋•┗┓┣┓┏
+┻┗━•┗┛ ┃•┗┛┗┛┛
+</pre>
+</details>
+
+<!-- markdownlint-enable MD033 -->
+
+##### Adding a custom font
 
 ### Keymaps
 
