@@ -25,7 +25,7 @@ providing a clean API for other plugins or custom configurations.
   - [Installation](#installation)
     - [Options](#options)
       - [Dashboard fonts](#dashboard-fonts)
-        - [Adding a custom font, Replacing existing font](#adding-a-custom-font-replacing-existing-font)
+        - [Custom fonts](#custom-fonts)
     - [Keymaps](#keymaps)
   - [Commands](#commands)
     - [Duration format](#duration-format)
