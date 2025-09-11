@@ -1,7 +1,7 @@
 -- More fonts can be found here
 -- https://patorjk.com/software/taag/
 
----@alias FontTable table< string, Font>
+---@alias FontTable table<string, Font>
 ---@alias Font {
 ---  padding?: number,
 ---  ["s"]: string[],

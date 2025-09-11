@@ -19,11 +19,7 @@ local defaults = {
     width = 0.8,
     height = 0.8,
     font = "DiamFont",
-    fonts = {
-      Terrace = {
-        padding = 10,
-      },
-    },
+    fonts = {},
   },
   debug = false,
 }
