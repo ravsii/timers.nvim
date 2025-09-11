@@ -9,7 +9,10 @@ providing a clean API for other plugins or custom configurations.
 > **This project is under active development.**
 >
 > While we prioritize backwards compatibility, the API is not guaranteed to be
-> stable yet. Until version `v1`, breaking changes may occur, but only in minor releases. Such changes will always be marked with a `!` following [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) notation.
+> stable yet. Until version `v1`, breaking changes may occur, but only in minor
+> releases. Such changes will always be marked with a `!` following
+> [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+> notation.
 
 <https://github.com/user-attachments/assets/92abc2e9-f9fa-46da-9a55-aa175fabcbc2>
 
@@ -22,6 +25,7 @@ providing a clean API for other plugins or custom configurations.
   - [Installation](#installation)
     - [Options](#options)
       - [Dashboard fonts](#dashboard-fonts)
+        - [Adding a custom font, Replacing existing font](#adding-a-custom-font-replacing-existing-font)
     - [Keymaps](#keymaps)
   - [Commands](#commands)
     - [Duration format](#duration-format)
@@ -111,7 +115,10 @@ These options are used by default and you don't need to pass all of them.
       width = 0.8,
       -- [0,1] for percentage of the screen, (1,∞) for an absolute value.
       height = 0.8,
-      font = ""
+      -- Font to use. Available fonts: DiamFont, Terrace, tmplr.
+      -- Or, you can provide a custom font using "fonts" field and use its name
+      font = "DiamFont",
+      fonts = { }, -- See: Custom fonts
     },
   },
 }
@@ -154,7 +161,7 @@ These options are used by default and you don't need to pass all of them.
 
 <!-- markdownlint-enable MD033 -->
 
-##### Adding a custom font
+##### Adding a custom font, Replacing existing font
 
 ### Keymaps
 

@@ -15,9 +15,15 @@ local defaults = {
   },
   persistent = false,
   dashboard = {
-    update_interval = 50,
+    update_interval = 1000,
     width = 0.8,
     height = 0.8,
+    font = "DiamFont",
+    fonts = {
+      Terrace = {
+        padding = 10,
+      },
+    },
   },
   debug = false,
 }
