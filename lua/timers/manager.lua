@@ -111,7 +111,6 @@ function M.save_state()
   vim.fn.writefile({ data }, state_file)
 end
 
----@private
 function M.load_state()
   if not config.persistent then
     return

@@ -6,6 +6,7 @@ function M.setup(opts)
   require("timers.commands").setup()
   require("timers.autocmd").setup()
   require("timers.manager").load_state()
+  require("timers.ui.dashboard_fonts").setup()
 end
 
 return M

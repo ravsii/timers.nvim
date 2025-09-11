@@ -9,7 +9,10 @@ providing a clean API for other plugins or custom configurations.
 > **This project is under active development.**
 >
 > While we prioritize backwards compatibility, the API is not guaranteed to be
-> stable yet. Until version `v1`, breaking changes may occur, but only in minor releases. Such changes will always be marked with a `!` following [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) notation.
+> stable yet. Until version `v1`, breaking changes may occur, but only in minor
+> releases. Such changes will always be marked with a `!` following
+> [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+> notation.
 
 <https://github.com/user-attachments/assets/92abc2e9-f9fa-46da-9a55-aa175fabcbc2>
 
@@ -21,6 +24,8 @@ providing a clean API for other plugins or custom configurations.
   - [Why not X?](#why-not-x)
   - [Installation](#installation)
     - [Options](#options)
+      - [Dashboard fonts](#dashboard-fonts)
+        - [Adding a custom font, Replacing existing font](#adding-a-custom-font-replacing-existing-font)
     - [Keymaps](#keymaps)
   - [Commands](#commands)
     - [Duration format](#duration-format)
@@ -110,6 +115,130 @@ These options are used by default and you don't need to pass all of them.
       width = 0.8,
       -- [0,1] for percentage of the screen, (1,∞) for an absolute value.
       height = 0.8,
+      -- Font to use. Available fonts: DiamFont, Terrace, tmplr.
+      -- Or, you can provide a custom font using "fonts" field and use its name
+      font = "DiamFont",
+      fonts = { }, -- See: Custom fonts
+    },
+  },
+}
+```
+
+#### Dashboard fonts
+<!-- markdownlint-disable MD033 -->
+
+<details>
+<summary>DiamFont</summary>
+<pre>
+▄ ▄▄▄▄   ▄▄▄▄ ▄  ▗▖   ▄▄▄▄ ▄▄▄▄
+█    █ █    █ █  ▐▌ █ █    █     ▄▄▄
+█ █▀▀▀   ▀▀▀█ ▀▀▀▜▌   ▀▀▀█ █▀▀█ ▀▄▄
+█ █▄▄▄ █ ▄▄▄█    ▐▌ █ ▄▄▄█ █▄▄█ ▄▄▄▀
+</pre>
+</details>
+
+<details>
+<summary>Terrace</summary>
+<pre>
+  ░██    ░██████       ░██████     ░████       ░████████  ░██████
+░████   ░██   ░██     ░██   ░██   ░██ ██       ░██       ░██   ░██
+  ░██         ░██           ░██  ░██  ██       ░███████  ░██        ░███████  
+  ░██     ░█████  ░██   ░█████  ░██   ██   ░██       ░██ ░███████  ░██
+  ░██    ░██                ░██ ░█████████     ░██   ░██ ░██   ░██  ░███████  
+  ░██   ░██           ░██   ░██      ░██       ░██   ░██ ░██   ░██        ░██
+░██████ ░████████ ░██  ░██████       ░██   ░██  ░██████   ░██████   ░███████  
+</pre>
+</details>
+
+<details>
+<summary>tmplr</summary>
+<pre>
+┓┏┓ ┏┓┃┃ ┏━┏┓
+┃┏┛• ┫┗╋•┗┓┣┓┏
+┻┗━•┗┛ ┃•┗┛┗┛┛
+</pre>
+</details>
+
+<!-- markdownlint-enable MD033 -->
+
+##### Custom fonts
+
+You can also provide custom fonts, or modify existing fonts, either the entire
+font or change specific letters
+
+```lua
+{
+  'ravsii/timers.nvim',
+  ---@module "timers.config"
+  ---@type Config
+  opts = {
+    dashboard = {
+      fonts = {
+        Terrace = {
+          -- change padding between letters. It's 1 by default.
+          padding = 10,
+          -- replace a letter
+          ["s"] = {
+            "    ",
+            " ▄▄▄",
+            "▀▄▄ ",
+            "▄▄▄▀",
+          },
+        },
+      },
+    },
+  },
+}
+```
+
+To make a new font, you should put it in the `fonts` table. `fonts` is a
+`FontTable`. Here it's definition and the characters you need to provide.
+
+```lua
+---@alias FontTable table<string, Font>
+---@alias Font {
+---  padding?: number,
+---  ["s"]: string[],
+---  [":"]: string[],
+---  ["0"]: string[],
+---  ["1"]: string[],
+---  ["2"]: string[],
+---  ["3"]: string[],
+---  ["4"]: string[],
+---  ["5"]: string[],
+---  ["6"]: string[],
+---  ["7"]: string[],
+---  ["8"]: string[],
+---  ["9"]: string[],
+---}
+```
+
+So, adding a new font would look like this:
+
+```lua
+{
+  'ravsii/timers.nvim',
+  ---@module "timers.config"
+  ---@type Config
+  opts = {
+    dashboard = {
+      font = "MyFont"
+      fonts = {
+        MyFont = {
+          padding = 2,
+            ["s"] = {
+              " ",
+              "┏",
+              "┛",
+            },
+            [":"] = {
+              " ",
+              "•",
+              "•",
+            },
+            -- other letters...
+        },
+      },
     },
   },
 }
@@ -388,11 +517,7 @@ You can display the closest timer to expire in
   - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
   everything I need, and its api is widely supported across multiple plugins.
 - [ ] Fullscreen mode for current timer
-  - [ ] Fonts
-    - [ ] More built-in fonts
-    - [ ] Allow passing custom fonts via config
   - [ ] "... and X more" for the
   - [ ] Limit the amount of timers showing on dashboard
 - [ ] Prelude-like import, because it's almost always required to import 4
   modules just to create and start a timer.
-- [ ] CI Release pipeline on new tag

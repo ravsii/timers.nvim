@@ -10,11 +10,15 @@ local utils = require("timers.ui.utils")
 
 ---@class DashboardOpts
 ---Interval (in milliseconds) at which the dashboard state is updated.
----@field update_interval integer
+---@field update_interval? integer
 ---[0,1] for percentage of the screen, (1,∞) for an absolute value.
----@field width number
+---@field width? number
 ---[0,1] for percentage of the screen, (1,∞) for an absolute value.
----@field height number
+---@field height? number
+---Font to use. Available values: DiamFont, Terrace, tmplr.
+---Or, you can provide a custom font using "fonts" field and use its name.
+---@field font? "DiamFont"|"Terrace"|"tmplr"|string
+---@field fonts? FontTable
 
 ---@private
 ---@return timer_list timers List of active timers, sorted by expiration
@@ -191,7 +195,8 @@ function D:draw()
 
   local big_timer_segment = {}
   if #timers > 0 then
-    big_timer_segment = into_segments(fonts.from_duration(timers[1].t:expire_in()), "Statement")
+    local big_timer = fonts.from_duration(timers[1].t:expire_in(), config.dashboard.font)
+    big_timer_segment = into_segments(big_timer, "Statement")
   end
 
   local timers_segment = make_timer_segments(timers)
