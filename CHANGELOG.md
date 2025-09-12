@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/ravsii/timers.nvim/compare/v0.1.0...v0.2.0) (2025-09-12)
+
+
+### Features
+
+* **manager:** better state handling across reloads (not restarts) ([e269299](https://github.com/ravsii/timers.nvim/commit/e26929998a6c278e1c2d36e4524cc3329883aa5a))
+* **manager:** better state handling across reloads (not restarts) ([090c9e5](https://github.com/ravsii/timers.nvim/commit/090c9e5ce0e4817c6d219ab55e8b923476f7d78c))
+
+
+### Bug Fixes
+
+* **dashboard:** cancel last timer error ([#11](https://github.com/ravsii/timers.nvim/issues/11)) ([8cb1ad0](https://github.com/ravsii/timers.nvim/commit/8cb1ad032b7ccdfad057c851d545f023ec634a9d))
+
 ## [0.1.0](https://github.com/ravsii/timers.nvim/compare/v0.0.3...v0.1.0) (2025-09-11)
 
 
