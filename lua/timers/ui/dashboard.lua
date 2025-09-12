@@ -312,6 +312,10 @@ function D:cancel_selected()
   end
 
   ui.cancel(timers[self.cursor_position].id)
+
+  if self.cursor_position == #timers then
+    D:move_cursor(-1)
+  end
 end
 
 ---Represents a neovim line like direction where to move cursor:
