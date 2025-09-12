@@ -9,13 +9,27 @@ local state_file = vim.fn.stdpath("data") .. "/timers.nvim/timers.json"
 ---@alias TimerTable table<integer, Timer>
 
 ---@class TimerManager
-local M = {
-  ---@type TimerTable
-  ---@private
-  ---Stores all active timers in a k-v pairs.
-  ---Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them.
-  active_timers = {},
-}
+local M = _G.__TIMERS_MANAGER
+if not M then
+  M = {
+    ---@type TimerTable
+    ---@private
+    ---Stores all active timers in a k-v pairs.
+    ---Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them.
+    active_timers = {},
+  }
+  _G.__TIMERS_MANAGER = M
+end
+
+_G.__TIMERS_MANAGER_LOADED = _G.__TIMERS_MANAGER_LOADED or false
+
+function M.setup()
+  -- fix duplicates on :Lazy reload timers.nvim
+  if not _G.__TIMERS_MANAGER_LOADED then
+    require("timers.manager").load_state()
+    _G.__TIMERS_MANAGER_LOADED = true
+  end
+end
 
 ---Starts a timer and tracks it in TimerManager.active_timers. The function
 ---returns 2 values for cancellation.
@@ -35,12 +49,12 @@ function M.start_timer(t)
   end
 
   id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
+    cancel_func()
     if t.on_finish then
       t.on_finish(t, id)
     else
       vim.notify(t.message, t.log_level, notify_opts)
     end
-    cancel_func()
   end)
 
   t.started = os.time()
