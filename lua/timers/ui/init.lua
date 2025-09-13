@@ -22,6 +22,8 @@ end
 local function format_item_select(item)
   return "ID: "
     .. item.id
+    .. " | Paused: "
+    .. (item.t.paused_at and "" or "")
     .. " | "
     .. item.t.icon
     .. " "
@@ -35,19 +37,12 @@ end
 ---@class UI
 local UI = {}
 
-function UI.create_timer()
-  require("timers.ui.create"):create_timer()
-end
-
-function UI.dashboard()
-  require("timers.ui.dashboard"):show()
-end
-
 ---Shows the list of active timers
 function UI.active_timers()
   if not UI._have_active_timers() then
     return
   end
+
   vim.ui.select(
     active_timers_list(),
     { prompt = "Active Timers", format_item = format_item_select },
@@ -62,8 +57,8 @@ function UI.cancel(id)
     return
   end
 
-  local function cancel(id)
-    if manager.cancel(id) then
+  local function cancel(cid)
+    if manager.cancel(cid) then
       vim.notify("Timer cancelled", nil, notify_opts)
     end
   end
@@ -97,6 +92,46 @@ function UI.cancel_all()
 
   manager.cancel_all()
   vim.notify("All timers cancelled", nil, notify_opts)
+end
+
+function UI.create_timer()
+  require("timers.ui.create"):create_timer()
+end
+
+function UI.dashboard()
+  require("timers.ui.dashboard"):show()
+end
+
+---Shows the list of active timers to pause.
+---@param id integer? if passed, cancels a specific timer
+function UI.pause(id)
+  if not UI._have_active_timers() then
+    return
+  end
+
+  local function pause(pid)
+    if manager.pause(pid) then
+      vim.notify("Timer " .. pid .. " paused", vim.log.levels.INFO, notify_opts)
+    end
+  end
+
+  if id then
+    pause(id)
+    return
+  end
+
+  vim.ui.select(
+    active_timers_list(),
+    { prompt = "Select a timer to pause", format_item = format_item_select },
+    ---@param item? TimersListItem
+    function(item)
+      if item == nil then
+        return
+      end
+
+      pause(item.id)
+    end
+  )
 end
 
 ---Returns true if there are any active timers, vim.notify("No active timers")

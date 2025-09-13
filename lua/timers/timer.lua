@@ -2,7 +2,7 @@ local config = require("timers.config")
 local duration = require("timers.duration")
 local unit = require("timers.unit")
 
----Represents a time returned by os.time()
+---Represents a time returned by os.time() in seconds.
 ---@alias time number
 
 ---@class TimerOpts
@@ -21,9 +21,12 @@ local unit = require("timers.unit")
 ---@class Timer:TimerOpts
 ---When the timer was created. "Created" here means when :new() was called, not
 ---when manager.start_timer() was called.
----@field created time
+---@field created_at time
 ---When the timer was started, using manager.start_timer().
----@field started time?
+---@field started_at time?
+---When the timer was paused. If it's not nil, then the timer is currently
+---paused.
+---@field paused_at time?
 ---@field duration Duration
 local T = {}
 T.__index = T
@@ -42,7 +45,7 @@ function T.new(dur, opts)
 
   assert(getmetatable(dur) == duration, "Timer.new: duration must be a number or Duration")
 
-  local base_timer = { created = os.time(), duration = dur } ---@type Timer
+  local base_timer = { created_at = os.time(), duration = dur } ---@type Timer
 
   ---@type Timer
   local timer = vim.tbl_extend("force", config.default_timer, opts, base_timer)
@@ -54,9 +57,14 @@ end
 ---Returns remaining duration of a timer.
 ---@return Duration
 function T:expire_in()
-  local expire_at = self.started + self.duration:asSeconds()
-  local remaining = expire_at - os.time()
-  return duration.from(remaining * unit.SECOND)
+  local expire_sec ---@type time
+  if self.paused_at == nil then
+    expire_sec = (self.started_at + self.duration:asSeconds()) - os.time()
+  else
+    expire_sec = self.duration:asSeconds() - (self.paused_at - self.started_at)
+  end
+
+  return duration.from(expire_sec * unit.SECOND)
 end
 
 return T

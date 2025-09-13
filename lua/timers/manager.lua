@@ -69,7 +69,7 @@ function M.start_timer(t)
     end
   end)
 
-  t.started = os.time()
+  t.started_at = os.time()
   local table_item = { timer = t, _uv = uv_timer } ---@type InternalTableItem
   M.active_timers[id] = table_item
   M.save_state()
@@ -97,7 +97,7 @@ function M.get_closest_timer()
   local now = os.time()
 
   for _, t in pairs(M.timers()) do
-    local expire_at = t.started + t.duration:asSeconds()
+    local expire_at = t.started_at + t.duration:asSeconds()
     local remaining = expire_at - now
 
     if remaining < minRemaining then
@@ -119,6 +119,72 @@ function M.timers()
   end
 
   return result
+end
+
+---@return integer count Amount of active timers
+function M.active_timers_num()
+  local count = 0
+  for _ in pairs(M.active_timers) do
+    count = count + 1
+  end
+  return count
+end
+
+---Resume a timer by id, if it was paused.
+---This works as starting a new timers from scratch, so started_at and
+---paused_at properties will be reset.
+---@param id integer
+---@return boolean resumed true if the timer exists, was paused and resumed.
+function M.resume(id)
+  local t = M.active_timers[id]
+  if t == nil then
+    return false
+  end
+
+  return true
+end
+
+---Pause a timer by id
+---@param id integer
+---@return boolean paused true if the timer was found and paused.
+function M.pause(id)
+  local t = M.active_timers[id]
+  if t == nil then
+    return false
+  end
+
+  t._uv:stop()
+  t.timer.paused_at = os.time()
+
+  return true
+end
+
+---Cancel a timer by id
+---@param id integer
+---@return boolean canceled true if the timer was found and stopped
+function M.cancel(id)
+  local t = M.active_timers[id]
+  if t == nil then
+    return false
+  end
+
+  t._uv:stop()
+  t._uv:close()
+
+  M.active_timers[id] = nil
+  M.save_state()
+
+  return true
+end
+
+---Cancel and drop all active timers
+function M.cancel_all()
+  for id, t in pairs(M.active_timers) do
+    t._uv:stop()
+    t._uv:close()
+    M.active_timers[id] = nil
+  end
+  M.save_state()
 end
 
 ---@private
@@ -158,49 +224,12 @@ function M.load_state()
   local cur_time = os.time()
 
   for _, opts in ipairs(old_timers) do
-    local sub = duration.from((cur_time - opts.started) * unit.SECOND)
+    local sub = duration.from((cur_time - opts.started_at) * unit.SECOND)
     local time_left = duration.from(opts.duration.value):sub(sub)
     if time_left.value > 0 then
       M.start_timer(timer.new(time_left, opts))
     end
   end
-end
-
----@return integer count Amount of active timers
-function M.active_timers_num()
-  local count = 0
-  for _ in pairs(M.active_timers) do
-    count = count + 1
-  end
-  return count
-end
-
----Cancel a timer by its id
----@param id integer
----@return boolean canceled true if the timer was found and stopped
-function M.cancel(id)
-  local t = M.active_timers[id]
-  if t == nil then
-    return false
-  end
-
-  t._uv:stop()
-  t._uv:close()
-
-  M.active_timers[id] = nil
-  M.save_state()
-
-  return true
-end
-
----Cancel and drop all active timers
-function M.cancel_all()
-  for id, t in pairs(M.active_timers) do
-    t._uv:stop()
-    t._uv:close()
-    M.active_timers[id] = nil
-  end
-  M.save_state()
 end
 
 return M
