@@ -516,6 +516,7 @@ You can display the closest timer to expire in
   - [x] `vim.ui.select`
   - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
   everything I need, and its api is widely supported across multiple plugins.
+- [ ] `TimerPause`
 - [ ] Fullscreen mode for current timer
   - [ ] "... and X more" for the
   - [ ] Limit the amount of timers showing on dashboard

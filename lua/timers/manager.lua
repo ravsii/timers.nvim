@@ -8,15 +8,23 @@ local state_file = vim.fn.stdpath("data") .. "/timers.nvim/timers.json"
 
 ---@alias TimerTable table<integer, Timer>
 
----@class TimerManager
+---@alias InternalTable table<integer, InternalTableItem>
+---@alias InternalTableItem { timer: Timer, _uv: uv.uv_timer_t, }
+
+---@class Manager
 local M = _G.__TIMERS_MANAGER
 if not M then
   M = {
-    ---@type TimerTable
-    ---@private
     ---Stores all active timers in a k-v pairs.
-    ---Keys are nvim's assigned timer IDs, so you can vim.fn.timer_stop() them.
+    ---@private
+    ---@type InternalTable
     active_timers = {},
+
+    ---Provides IDs for timers, so that they can be easily identified. It's
+    ---also a bit of a legacy code, since initially we were using vim.fn timers
+    ---instead of vim.uv timers.
+    ---@private
+    next_id = 1,
   }
   _G.__TIMERS_MANAGER = M
 end
@@ -38,17 +46,21 @@ end
 ---@return fun() cancel Cancel func that can be used to stop the timer. It
 ---already knows the correct ID.
 function M.start_timer(t)
-  ---ID is created here, but assigned later. It's required for callbacks so we
-  ---have to do it this way.
-  ---@type integer
-  local id
+  local id = M.next_id or 1
+  M.next_id = id + 1
 
   local notify_opts = { title = t.title, icon = t.icon }
   local cancel_func = function()
     M.cancel(id)
   end
 
-  id = vim.fn.timer_start(t.duration:asMilliseconds(), function()
+  local uv_timer, err, err_name = vim.uv.new_timer()
+  if uv_timer == nil then
+    vim.notify("Can't create timer (" .. err_name .. "):" .. err, vim.log.levels.ERROR, notify_opts)
+    return -1, function() end
+  end
+
+  uv_timer:start(t.duration:asMilliseconds(), 0, function()
     cancel_func()
     if t.on_finish then
       t.on_finish(t, id)
@@ -58,7 +70,8 @@ function M.start_timer(t)
   end)
 
   t.started = os.time()
-  M.active_timers[id] = t
+  local table_item = { timer = t, _uv = uv_timer } ---@type InternalTableItem
+  M.active_timers[id] = table_item
   M.save_state()
 
   debug.log("new timer added " .. vim.inspect(t))
@@ -75,7 +88,7 @@ function M.start_timer(t)
 end
 
 ---@return Timer? timer First timer that's about to expire or nil, if there are
----no timers
+---no timers.
 function M.get_closest_timer()
   ---@type Timer?
   local minTimer = nil
@@ -83,7 +96,7 @@ function M.get_closest_timer()
 
   local now = os.time()
 
-  for _, t in pairs(M.active_timers) do
+  for _, t in pairs(M.timers()) do
     local expire_at = t.started + t.duration:asSeconds()
     local remaining = expire_at - now
 
@@ -97,9 +110,14 @@ function M.get_closest_timer()
 end
 
 ---Returns all active timers.
----@return TimerTable timers
+---@return TimerTable
 function M.timers()
-  return vim.tbl_deep_extend("force", {}, M.active_timers)
+  local result = {} ---@type TimerTable
+  for id, t in pairs(M.active_timers) do
+    result[id] = t.timer
+  end
+
+  return result
 end
 
 ---@private
@@ -114,7 +132,7 @@ function M.save_state()
   ---@type Timer[]
   local saved = {}
 
-  for _, t in pairs(M.active_timers) do
+  for _, t in pairs(M.timers()) do
     local copy = vim.tbl_deep_extend("force", {}, t)
     copy.on_start = nil
     copy.on_finish = nil
@@ -156,27 +174,32 @@ function M.active_timers_num()
   return count
 end
 
----Cancels a timer by its id
+---Cancel a timer by its id
 ---@param id integer
----@return boolean value true if the timer was found and stopped
+---@return boolean canceled true if the timer was found and stopped
 function M.cancel(id)
-  if M.active_timers[id] == nil then
+  local t = M.active_timers[id]
+  if t == nil then
     return false
   end
 
-  vim.fn.timer_stop(id)
+  t._uv:stop()
+  t._uv:close()
+
   M.active_timers[id] = nil
   M.save_state()
 
   return true
 end
 
---- Cancel all active timers
+---Cancel and drop all active timers
 function M.cancel_all()
-  for id, _ in pairs(M.active_timers) do
-    vim.fn.timer_stop(id)
+  for id, t in pairs(M.active_timers) do
+    t._uv:stop()
+    t._uv:close()
+    M.active_timers[id] = nil
   end
-  M.active_timers = {}
   M.save_state()
 end
+
 return M
