@@ -1,14 +1,13 @@
-local create = require("timers.ui.create")
 local manager = require("timers.manager")
 
 local notify_opts = { icon = "󱎫", title = "timers.nvim" }
 
----@alias timer_list_item { id: number, t: Timer }
----@alias timer_list timer_list_item[],
+---@alias TimersListItem { id: number, t: Timer }
+---@alias TimersList TimersListItem[],
 
----@return timer_list
+---@return TimersList
 local function active_timers_list()
-  ---@type timer_list
+  ---@type TimersList
   local timers = {}
 
   for id, at in pairs(manager.timers()) do
@@ -18,7 +17,7 @@ local function active_timers_list()
   return timers
 end
 
----@param item timer_list_item
+---@param item TimersListItem
 ---@return string
 local function format_item_select(item)
   return "ID: "
@@ -34,19 +33,19 @@ local function format_item_select(item)
 end
 
 ---@class UI
-local M = {}
+local UI = {}
 
-function M.create_timer()
+function UI.create_timer()
   require("timers.ui.create"):create_timer()
 end
 
-function M.dashboard()
+function UI.dashboard()
   require("timers.ui.dashboard"):show()
 end
 
 ---Shows the list of active timers
-function M.active_timers()
-  if not M._have_active_timers() then
+function UI.active_timers()
+  if not UI._have_active_timers() then
     return
   end
   vim.ui.select(
@@ -58,8 +57,8 @@ end
 
 ---Shows the list of active timers to cancel
 ---@param id integer? if passed, cancels a specific timer
-function M.cancel(id)
-  if not M._have_active_timers() then
+function UI.cancel(id)
+  if not UI._have_active_timers() then
     return
   end
 
@@ -77,7 +76,7 @@ function M.cancel(id)
   vim.ui.select(
     active_timers_list(),
     { prompt = "Select a timer to cancel", format_item = format_item_select },
-    ---@param item? timer_list_item
+    ---@param item? TimersListItem
     function(item)
       if item == nil then
         return
@@ -91,8 +90,8 @@ end
 ---Copy of TimerManager.cancel_all, but also gives a feedback message, if there
 ---were any timers
 ---@see TimerManager.cancel_all
-function M.cancel_all()
-  if not M._have_active_timers() then
+function UI.cancel_all()
+  if not UI._have_active_timers() then
     return
   end
 
@@ -104,7 +103,7 @@ end
 ---otherwise
 ---@private
 ---@return boolean
-function M._have_active_timers()
+function UI._have_active_timers()
   local n = manager.active_timers_num()
   if n <= 0 then
     vim.notify("No active timers", nil, notify_opts)
@@ -113,4 +112,4 @@ function M._have_active_timers()
 
   return true
 end
-return M
+return UI

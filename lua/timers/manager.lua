@@ -113,6 +113,7 @@ end
 ---@return TimerTable
 function M.timers()
   local result = {} ---@type TimerTable
+
   for id, t in pairs(M.active_timers) do
     result[id] = t.timer
   end
