@@ -54,6 +54,12 @@ function T.new(dur, opts)
   return self
 end
 
+---Returns true if the timer is currently paused (but still active)
+---@return boolean paused
+function T:paused()
+  return self.paused_at ~= nil
+end
+
 ---Returns remaining duration of a timer.
 ---@return Duration
 function T:expire_in()

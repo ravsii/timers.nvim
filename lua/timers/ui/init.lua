@@ -22,8 +22,6 @@ end
 local function format_item_select(item)
   return "ID: "
     .. item.id
-    .. " | Paused: "
-    .. (item.t.paused_at and "" or "")
     .. " | "
     .. item.t.icon
     .. " "
@@ -32,6 +30,7 @@ local function format_item_select(item)
     .. item.t.message
     .. " | Time left: "
     .. item.t:expire_in():into_hms()
+    .. (item.t.paused_at and " (paused)" or "")
 end
 
 ---@class UI
