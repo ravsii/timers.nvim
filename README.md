@@ -44,7 +44,7 @@ providing a clean API for other plugins or custom configurations.
 
 ## Why not X?
 
-Yes, there are already Neovim timer plugins out there — for example:
+Yes, there are already Neovim timer plugins out there, for example:
 
 - [pulse.nvim](https://github.com/linguini1/pulse.nvim)
 - [pomo.nvim](https://github.com/epwalsh/pomo.nvim)
@@ -142,11 +142,11 @@ These options are used by default and you don't need to pass all of them.
 <pre>
   ░██    ░██████       ░██████     ░████       ░████████  ░██████
 ░████   ░██   ░██     ░██   ░██   ░██ ██       ░██       ░██   ░██
-  ░██         ░██           ░██  ░██  ██       ░███████  ░██        ░███████  
+  ░██         ░██           ░██  ░██  ██       ░███████  ░██        ░███████
   ░██     ░█████  ░██   ░█████  ░██   ██   ░██       ░██ ░███████  ░██
-  ░██    ░██                ░██ ░█████████     ░██   ░██ ░██   ░██  ░███████  
+  ░██    ░██                ░██ ░█████████     ░██   ░██ ░██   ░██  ░███████
   ░██   ░██           ░██   ░██      ░██       ░██   ░██ ░██   ░██        ░██
-░██████ ░████████ ░██  ░██████       ░██   ░██  ░██████   ░██████   ░███████  
+░██████ ░████████ ░██  ░██████       ░██   ░██  ░██████   ░██████   ░███████
 </pre>
 </details>
 
@@ -259,13 +259,15 @@ If you like command-style  (`<cmd>TimersDashboard<cr>`) binds more,  see: [comma
     { "<leader>Tn", function() require("timers.ui").create_timer() end, desc = "New timer" },
     { "<leader>Tc", function() require("timers.ui").cancel() end, desc = "Cancel a timer" },
     { "<leader>TC", function() require("timers.ui").cancel_all() end, desc = "Cancel all timers" },
+    { "<leader>Tr", function() require("timers.ui").resume() end, desc = "Resume a timer" },
+    { "<leader>Tp", function() require("timers.ui").pause() end, desc = "Pause a timer" },
   },
 }
 ```
 
 ## Commands
 
-- `:TimersCreate` - Like `:TimersStart`, but with interactive UI.
+- `:TimersNew` - Like `:TimersStart`, but with interactive UI.
 ![New timer showcase](./pics/create.jpg)
 
 - `:TimersStart <duration> <message?>` - Starts a new timer.
@@ -284,10 +286,14 @@ If you like command-style  (`<cmd>TimersDashboard<cr>`) binds more,  see: [comma
 :TimersStart 10h29m59s Complex Time      " 10 hours 29 minutes and 59 seconds
 ```
 
-- `:TimersActive` - Shows active timers (`vim.ui.select`)
-- `:TimersCancel <id?>` - Cancel a specific timer by its ID.
+- `:TimersActive` - Shows active timers (`vim.ui.select`). No action on select,
+  just a preview list.
+- `:TimersPause <id?>` - Pauses a timer by id.
   - `<id?>`: optional. If no id given, it'll open up in interactive UI
-  (`vim.ui.select`)
+- `:TimersResume <id?>` - Resumes a paused timer by id.
+  - `<id?>`: optional. If no id given, it'll open up in interactive UI
+- `:TimersCancel <id?>` - Cancel a specific timer by id.
+  - `<id?>`: optional. If no id given, it'll open up in interactive UI
 - `:TimerCancelAll` - Cancel all active timers.
 - `:TimerDashboard` — Opens the dashboard. This is still a work in progress and
 mainly serves as a proof of concept.
@@ -329,11 +335,12 @@ local d2 = d.from(5 * u.SECOND)
 local d3 = d.parse_format("5h5m5s")
 
 -- Convert
-local ms = d3:asMilliseconds() -- -> 18305000
-local sec = d3:asSeconds() -- -> 18305
+local ms = d3:asMilliseconds() -- 18305000
+local sec = d3:asSeconds() -- 18305
 
 -- Arithmetic
-local diff = d3:sub(d1) -- new Duration
+local diff = d3:sub(d1)
+local diff2 = d3:sub(1000) -- remove 1s from d3
 
 -- Display
 local str = d3:into_hms() -- "05:05:05"
@@ -410,10 +417,14 @@ m.cancel(id) -- or by ID directly
 -- Cancel all timers
 m.cancel_all()
 
+-- Pausing and resuming timers
+m.pause(id)
+m.resume(id)
+
 -- Query timers
-local active_count = m.active_timers_num()
 local closest_timer = m.get_closest_timer()
 local all_timers = m.timers()
+local active_count = m.timers_count()
 ```
 
 **Notes:**
@@ -516,9 +527,13 @@ You can display the closest timer to expire in
   - [x] `vim.ui.select`
   - [ ] `Snacks` - probably won't do for now, because `vim.ui.select` can do
   everything I need, and its api is widely supported across multiple plugins.
-- [ ] `TimerPause`
-- [ ] Fullscreen mode for current timer
+- [ ] Default callbacks
+- [ ] Dashboard
   - [ ] "... and X more" for the
   - [ ] Limit the amount of timers showing on dashboard
+  - [ ] Better sync between actions and UI (see [known bugs](#known-bugs))
+  - [ ] Pause / Resume actions
+  - [ ] Better UI for available actions
 - [ ] Prelude-like import, because it's almost always required to import 4
   modules just to create and start a timer.
+- [ ] More unit-tests, where possible

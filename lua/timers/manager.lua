@@ -109,7 +109,7 @@ function M.get_closest_timer()
   return minTimer
 end
 
----Returns all active timers.
+---Returns all initialized timers, both running and paused.
 ---@return TimerTable
 function M.timers()
   local result = {} ---@type TimerTable
@@ -121,8 +121,8 @@ function M.timers()
   return result
 end
 
----@return integer count Amount of active timers
-function M.active_timers_num()
+---@return integer count Amount of initialized timers, both running and paused.
+function M.timers_count()
   local count = 0
   for _ in pairs(M.active_timers) do
     count = count + 1
@@ -136,12 +136,33 @@ end
 ---@param id integer
 ---@return boolean resumed true if the timer exists, was paused and resumed.
 function M.resume(id)
-  local t = M.active_timers[id]
-  if t == nil then
+  local item = M.active_timers[id]
+  if item == nil then
     return false
   end
 
-  -- TODO: this
+  local t = item.timer
+
+  if t.paused_at == nil then
+    return false
+  end
+
+  local ostime = os.time()
+  local diff = ostime - t.paused_at
+  t.paused_at = nil
+  t.started_at = ostime
+
+  item._uv:start(t.duration:sub(diff * unit.SECOND):asMilliseconds(), 0, function()
+    M.cancel(id)
+    if t.on_finish then
+      t.on_finish(t, id)
+    else
+      vim.notify(t.message, t.log_level, { title = t.title, icon = t.icon })
+    end
+  end)
+
+  M.active_timers[id].timer = t
+  M.save_state()
 
   return true
 end
@@ -155,8 +176,13 @@ function M.pause(id)
     return false
   end
 
+  if t.timer.paused_at ~= nil then
+    return false
+  end
+
   t._uv:stop()
   t.timer.paused_at = os.time()
+  M.save_state()
 
   return true
 end

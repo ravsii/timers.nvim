@@ -104,7 +104,15 @@ end
 ---Shows the list of active timers to pause.
 ---@param id integer? if passed, cancels a specific timer
 function UI.pause(id)
-  if not UI._have_active_timers() then
+  local running_timers = manager.timers()
+  for k in pairs(running_timers) do
+    if running_timers[k].paused_at ~= nil then
+      running_timers[k] = nil
+    end
+  end
+
+  if next(running_timers) == nil then
+    vim.notify("No paused timers", nil, notify_opts)
     return
   end
 
@@ -133,12 +141,52 @@ function UI.pause(id)
   )
 end
 
+---Shows the list of paused timers to resume
+---@param id integer? if passed, cancels a specific timer
+function UI.resume(id)
+  local paused_timers = manager.timers()
+  for k in pairs(paused_timers) do
+    if paused_timers[k].paused_at == nil then
+      paused_timers[k] = nil
+    end
+  end
+
+  if next(paused_timers) == nil then
+    vim.notify("No paused timers", nil, notify_opts)
+    return
+  end
+
+  local function resume(tid)
+    if manager.resume(tid) then
+      vim.notify("Timer " .. tid .. " resumed", vim.log.levels.INFO, notify_opts)
+    end
+  end
+
+  if id then
+    resume(id)
+    return
+  end
+
+  vim.ui.select(
+    active_timers_list(),
+    { prompt = "Select a timer to resume", format_item = format_item_select },
+    ---@param item? TimersListItem
+    function(item)
+      if item == nil then
+        return
+      end
+
+      resume(item.id)
+    end
+  )
+end
+
 ---Returns true if there are any active timers, vim.notify("No active timers")
 ---otherwise
 ---@private
 ---@return boolean
 function UI._have_active_timers()
-  local n = manager.active_timers_num()
+  local n = manager.timers_count()
   if n <= 0 then
     vim.notify("No active timers", nil, notify_opts)
     return false
@@ -146,4 +194,5 @@ function UI._have_active_timers()
 
   return true
 end
+
 return UI
