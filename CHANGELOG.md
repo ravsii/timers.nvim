@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/ravsii/timers.nvim/compare/v0.3.0...v0.3.1) (2025-09-14)
+
+
+### Bug Fixes
+
+* **manager:** incorrect carrying of pausing state across sessions ([#15](https://github.com/ravsii/timers.nvim/issues/15)) ([087bec4](https://github.com/ravsii/timers.nvim/commit/087bec4403f662bfdb3eb97e4cb0a6cf9a612644))
+
 ## [0.3.0](https://github.com/ravsii/timers.nvim/compare/v0.2.0...v0.3.0) (2025-09-14)
 
 
