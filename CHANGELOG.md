@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.0](https://github.com/ravsii/timers.nvim/compare/v0.2.0...v0.3.0) (2025-09-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **manager:** pausing and resuming ([#13](https://github.com/ravsii/timers.nvim/issues/13))
+
+### Features
+
+* **manager:** pausing and resuming ([#13](https://github.com/ravsii/timers.nvim/issues/13)) ([cad904f](https://github.com/ravsii/timers.nvim/commit/cad904fe7c24137e5d2b928af8f8a874803cb726))
+
+
+### Miscellaneous Chores
+
+* **release:** set ver to v0.3.0 ([9cb9fd7](https://github.com/ravsii/timers.nvim/commit/9cb9fd71dce2e9e611462c4480c1c7ed0cff7fe1))
+
 ## [0.2.0](https://github.com/ravsii/timers.nvim/compare/v0.1.0...v0.2.0) (2025-09-12)
 
 
