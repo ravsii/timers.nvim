@@ -4,9 +4,9 @@ local manager = require("timers.manager")
 local ui = require("timers.ui")
 local utils = require("timers.ui.utils")
 
----@alias lines segments[]
----@alias segments segment[]
----@alias segment {str: string, hl:string}
+---@alias Lines Segments[]
+---@alias Segments Segment[]
+---@alias Segment {str: string, hl:string}
 
 ---@class DashboardOpts
 ---Interval (in milliseconds) at which the dashboard state is updated.
@@ -21,9 +21,9 @@ local utils = require("timers.ui.utils")
 ---@field fonts? FontTable
 
 ---@private
----@return timer_list timers List of active timers, sorted by expiration
+---@return TimersList timers List of active timers, sorted by expiration
 local function active_timers()
-  local timers = {} ---@type timer_list
+  local timers = {} ---@type TimersList
 
   for id, at in pairs(manager.timers()) do
     table.insert(timers, { id = id, t = at })
@@ -37,8 +37,8 @@ local function active_timers()
   return timers
 end
 
----@param timers timer_list list of timers to convert
----@return lines lines lines to output
+---@param timers TimersList list of timers to convert
+---@return Lines lines lines to output
 local function make_timer_segments(timers)
   if #timers == 0 then
     return { { {
@@ -47,7 +47,7 @@ local function make_timer_segments(timers)
     } } }
   end
 
-  local segments = {} ---@type segments
+  local segments = {} ---@type Segments
   for _, item in pairs(timers) do
     local str = "ID: "
       .. item.id
@@ -59,6 +59,7 @@ local function make_timer_segments(timers)
       .. item.t.message
       .. " | Time left: "
       .. item.t:expire_in():into_hms()
+      .. (item.t.paused_at and " (paused)" or "")
 
     table.insert(segments, { { str = str } })
   end
@@ -169,13 +170,13 @@ end
 ---Converts a list of strings into lines of segments with the given highlight group.
 ---@param lines string[]
 ---@param hl? string
----@return lines
+---@return Lines
 local function into_segments(lines, hl)
-  local result = {} ---@type lines
+  local result = {} ---@type Lines
   local hl_str = hl or "" -- ensures hl is string
 
   for _, s in ipairs(lines) do
-    local line = { { str = s, hl = hl_str } } ---@type segments
+    local line = { { str = s, hl = hl_str } } ---@type Segments
     table.insert(result, line)
   end
 
@@ -209,7 +210,7 @@ function D:draw()
     { key = "q", text = "quit" },
   }
 
-  local binds_segment = {} ---@type segments
+  local binds_segment = {} ---@type Segments
   for i, bind in ipairs(binds) do
     if i > 1 then
       binds_segment[#binds_segment + 1] = { str = " | ", hl = "Comment" }
@@ -224,7 +225,7 @@ function D:draw()
 
   -- Center vertically and horizontally
   local top_padding = math.floor((h - content_height) / 2)
-  local content = {} ---@type lines
+  local content = {} ---@type Lines
 
   local offset = 1
   for _ = 1, top_padding do
