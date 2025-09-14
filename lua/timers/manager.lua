@@ -70,6 +70,7 @@ function M.start_timer(t)
   end)
 
   t.started_at = os.time()
+  t.paused_at = nil
   local table_item = { timer = t, _uv = uv_timer } ---@type InternalTableItem
   M.active_timers[id] = table_item
   M.save_state()
@@ -171,17 +172,18 @@ end
 ---@param id integer
 ---@return boolean paused true if the timer was found and paused.
 function M.pause(id)
-  local t = M.active_timers[id]
-  if t == nil then
+  local item = M.active_timers[id]
+  if item == nil then
     return false
   end
 
-  if t.timer.paused_at ~= nil then
+  if item.timer.paused_at ~= nil then
     return false
   end
 
-  t._uv:stop()
-  t.timer.paused_at = os.time()
+  item._uv:stop()
+  item.timer.paused_at = os.time()
+  M.active_timers[id] = item
   M.save_state()
 
   return true
@@ -253,7 +255,12 @@ function M.load_state()
 
   for _, opts in ipairs(old_timers) do
     -- Timer was running up until now, or, if it was paused, until paused_at
-    local ran_until = opts.paused_at and opts.paused_at or cur_time
+    local ran_until = cur_time
+
+    local was_paused = opts.paused_at ~= nil
+    if was_paused then
+      ran_until = opts.paused_at
+    end
 
     local time_left =
       duration.from(opts.duration.value):sub((ran_until - opts.started_at) * unit.SECOND)
@@ -263,7 +270,7 @@ function M.load_state()
       -- It's easier to handle paused timers this way, instead of recreating
       -- the entire start_timer from scratch.
       -- At least for now.
-      if opts.paused_at then
+      if was_paused then
         M.pause(tid)
       end
     end

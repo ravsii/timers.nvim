@@ -45,7 +45,13 @@ function T.new(dur, opts)
 
   assert(getmetatable(dur) == duration, "Timer.new: duration must be a number or Duration")
 
-  local base_timer = { created_at = os.time(), duration = dur } ---@type Timer
+  ---@type Timer
+  local base_timer = {
+    created_at = os.time(),
+    duration = dur,
+    paused_at = nil,
+    started_at = nil,
+  }
 
   ---@type Timer
   local timer = vim.tbl_extend("force", config.default_timer, opts, base_timer)
