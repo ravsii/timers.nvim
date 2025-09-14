@@ -14,13 +14,15 @@ providing a clean API for other plugins or custom configurations.
 > [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 > notation.
 
-<https://github.com/user-attachments/assets/92abc2e9-f9fa-46da-9a55-aa175fabcbc2>
-
 ## Table Of Contents
 
 <!--toc:start-->
 - [timers.nvim](#timersnvim)
   - [Table Of Contents](#table-of-contents)
+  - [What is it?](#what-is-it)
+    - [What `timers.nvim` provides](#what-timersnvim-provides)
+    - [What `timers.nvim` is not](#what-timersnvim-is-not)
+  - [Demo](#demo)
   - [Why not X?](#why-not-x)
   - [Installation](#installation)
     - [Options](#options)
@@ -35,12 +37,37 @@ providing a clean API for other plugins or custom configurations.
       - [Timer](#timer)
       - [Manager](#manager)
     - [Recepes](#recepes)
-      - [Pomodoro 25/5 timer](#pomodoro-255-timer)
+      - [Pomodoro 25-5 timer](#pomodoro-25-5-timer)
       - [Infinite timer](#infinite-timer)
       - [Closest timer for lualine](#closest-timer-for-lualine)
   - [Known bugs](#known-bugs)
   - [TODO](#todo)
 <!--toc:end-->
+
+## What is it?
+
+### What `timers.nvim` provides
+
+- High-level API for creating timers and working with durations. See
+[Timer](#timer) and [Duration](#duration-and-units).
+- High-level API for timers' runtime, called the
+[manager](#manager). It still uses `vim.uv` timers under the hood but provides
+extra suger, such as pausing and resuming.
+- UI components for interactivity. See [Commands](#commands).
+- Seamless persistence across Neovim restarts and reloads. See
+[Config](#options).
+
+### What `timers.nvim` is not
+
+- It’s not a plugin limited to specific timer presets, like pomodoro timers.
+[You can create them](#pomodoro-25-5-timer), but you can also do much more.
+- It’s not a plugin that implements its own runtime from scratch. `libuv` is
+already good enough - we simply provide a more ergonomic interface to work with
+it.
+
+## Demo
+
+<https://github.com/user-attachments/assets/92abc2e9-f9fa-46da-9a55-aa175fabcbc2>
 
 ## Why not X?
 
@@ -434,7 +461,7 @@ interact with them, as these don't have the backwards compatibility promise.
 
 ### Recepes
 
-#### Pomodoro 25/5 timer
+#### Pomodoro 25-5 timer
 
 ```lua
 local pomodoro_25_5 = function()
