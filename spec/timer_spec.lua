@@ -60,18 +60,14 @@ end)
 
 describe("Timer:expire_in", function()
   it("calculates remaining time while running", function()
-    local tm = t.new(5 * u.SECOND)
+    local tm = t.new(3 * u.SECOND)
     tm.started_at = os.time()
 
-    local fake_now = tm.started_at + 2
-    stub(os, "time", function()
-      return fake_now
-    end)
-
-    local d = tm:expire_in()
-    assert.is_true(d:asMilliseconds() <= 3000 and d:asMilliseconds() >= 2000)
-
-    os.time:revert()
+    for i = 1, 3 do
+      vim.uv.sleep(1000)
+      local exp = tm:expire_in()
+      assert.is_near(exp:asMilliseconds(), (3 - i) * 1000, 10)
+    end
   end)
 
   it("calculates remaining time while paused", function()
