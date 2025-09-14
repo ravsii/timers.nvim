@@ -34,7 +34,7 @@ _G.__TIMERS_MANAGER_LOADED = _G.__TIMERS_MANAGER_LOADED or false
 function M.setup()
   -- fix duplicates on :Lazy reload timers.nvim
   if not _G.__TIMERS_MANAGER_LOADED then
-    require("timers.manager").load_state()
+    M.load_state()
     _G.__TIMERS_MANAGER_LOADED = true
   end
 end
@@ -141,6 +141,8 @@ function M.resume(id)
     return false
   end
 
+  -- TODO: this
+
   return true
 end
 
@@ -224,10 +226,20 @@ function M.load_state()
   local cur_time = os.time()
 
   for _, opts in ipairs(old_timers) do
-    local sub = duration.from((cur_time - opts.started_at) * unit.SECOND)
-    local time_left = duration.from(opts.duration.value):sub(sub)
-    if time_left.value > 0 then
-      M.start_timer(timer.new(time_left, opts))
+    -- Timer was running up until now, or, if it was paused, until paused_at
+    local ran_until = opts.paused_at and opts.paused_at or cur_time
+
+    local time_left =
+      duration.from(opts.duration.value):sub((ran_until - opts.started_at) * unit.SECOND)
+
+    if opts.duration.value > 0 then
+      local tid = M.start_timer(timer.new(time_left, opts))
+      -- It's easier to handle paused timers this way, instead of recreating
+      -- the entire start_timer from scratch.
+      -- At least for now.
+      if opts.paused_at then
+        M.pause(tid)
+      end
     end
   end
 end

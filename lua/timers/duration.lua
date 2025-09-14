@@ -14,19 +14,29 @@ end
 
 ---Return value in milliseconds
 ---@return integer ms milliseconds, suitable for lua functions
-function Duration:asMilliseconds() return self.value end
+function Duration:asMilliseconds()
+  return self.value
+end
 
 ---Return value in seconds
 ---@return integer seconds
-function Duration:asSeconds() return self.value / unit.SECOND end
+function Duration:asSeconds()
+  return self.value / unit.SECOND
+end
 
 --- Returns a new Duration representing the result of subtracting `sub` from
 --- this duration. This does not modify the current Duration instance.
----@param sub Duration
+---@param sub Duration|number If number, it's converted to Duration as ms.
 ---@return Duration result
 function Duration:sub(sub)
-  local val = math.max(self.value - sub.value, 0)
-  return Duration.from(val)
+  local val = 0
+  if type(sub) == "number" then
+    val = self.value - sub
+  else
+    val = self.value - sub.value
+  end
+
+  return Duration.from(math.max(val, 0))
 end
 
 ---Parse a duration string into a Duration object.
@@ -73,24 +83,54 @@ function Duration.parse_format(str)
   end
 
   local cases = {
-    ["0"] = function() addNum(0) end,
-    ["1"] = function() addNum(1) end,
-    ["2"] = function() addNum(2) end,
-    ["3"] = function() addNum(3) end,
-    ["4"] = function() addNum(4) end,
-    ["5"] = function() addNum(5) end,
-    ["6"] = function() addNum(6) end,
-    ["7"] = function() addNum(7) end,
-    ["8"] = function() addNum(8) end,
-    ["9"] = function() addNum(9) end,
-    ["."] = function() inFraction = true end,
-    ["s"] = function() addTimeUnit(unit.SECOND) end,
-    ["m"] = function() addTimeUnit(unit.MINUTE) end,
-    ["h"] = function() addTimeUnit(unit.HOUR) end,
+    ["0"] = function()
+      addNum(0)
+    end,
+    ["1"] = function()
+      addNum(1)
+    end,
+    ["2"] = function()
+      addNum(2)
+    end,
+    ["3"] = function()
+      addNum(3)
+    end,
+    ["4"] = function()
+      addNum(4)
+    end,
+    ["5"] = function()
+      addNum(5)
+    end,
+    ["6"] = function()
+      addNum(6)
+    end,
+    ["7"] = function()
+      addNum(7)
+    end,
+    ["8"] = function()
+      addNum(8)
+    end,
+    ["9"] = function()
+      addNum(9)
+    end,
+    ["."] = function()
+      inFraction = true
+    end,
+    ["s"] = function()
+      addTimeUnit(unit.SECOND)
+    end,
+    ["m"] = function()
+      addTimeUnit(unit.MINUTE)
+    end,
+    ["h"] = function()
+      addTimeUnit(unit.HOUR)
+    end,
   }
 
   for c in str:gmatch(".") do
-    (cases[c] or function() error("Unexpected char: " .. c) end)()
+    (cases[c] or function()
+      error("Unexpected char: " .. c)
+    end)()
   end
 
   addTimeUnit(unit.MILLISECOND)

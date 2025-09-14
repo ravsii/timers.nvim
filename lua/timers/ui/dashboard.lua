@@ -59,6 +59,7 @@ local function make_timer_segments(timers)
       .. item.t.message
       .. " | Time left: "
       .. item.t:expire_in():into_hms()
+      .. (item.t.paused_at and " (paused)" or "")
 
     table.insert(segments, { { str = str } })
   end

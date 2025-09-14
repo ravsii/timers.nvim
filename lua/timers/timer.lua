@@ -31,8 +31,8 @@ local unit = require("timers.unit")
 local T = {}
 T.__index = T
 
----Create a new timer.
----@see TimerManager.start_timer starts it.
+---Create a new timer, but doesn't start it.
+---@see TimerManager.start_timer
 ---@param dur Duration|number If number, it's converted to Duration as ms.
 ---@param opts? TimerOpts
 ---@return Timer
