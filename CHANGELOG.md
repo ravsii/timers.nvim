@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/ravsii/timers.nvim/compare/v0.3.1...v0.3.2) (2025-09-15)
+
+
+### Bug Fixes
+
+* **manager:** error on cancel ([#17](https://github.com/ravsii/timers.nvim/issues/17)) ([678176c](https://github.com/ravsii/timers.nvim/commit/678176c3ff0f5ad5a2624e091ac05f17f0c542b0))
+
 ## [0.3.1](https://github.com/ravsii/timers.nvim/compare/v0.3.0...v0.3.1) (2025-09-14)
 
 
