@@ -5,6 +5,7 @@ local timer = require("timers.timer")
 local unit = require("timers.unit")
 
 local state_file = vim.fn.stdpath("data") .. "/timers.nvim/timers.json"
+local state_chmod = 420 -- 644
 
 ---@alias TimerTable table<integer, Timer>
 
@@ -217,14 +218,13 @@ function M.cancel_all()
   M.save_state()
 end
 
----@private
 function M.save_state()
   if not config.persistent then
     return
   end
 
-  local dir = vim.fn.fnamemodify(state_file, ":h")
-  vim.fn.mkdir(dir, "p")
+  local dir = vim.fs.dirname(state_file)
+  vim.uv.fs_mkdir(dir, 448) -- 700
 
   ---@type Timer[]
   local saved = {}
@@ -236,8 +236,11 @@ function M.save_state()
     table.insert(saved, copy)
   end
 
-  local data = vim.fn.json_encode(saved)
-  vim.fn.writefile({ data }, state_file)
+  local data = vim.json.encode(saved)
+  local fd = vim.uv.fs_open(state_file, "w", state_chmod)
+  assert(fd, "timers.nvim: can't create persistence file")
+  assert(vim.uv.fs_write(fd, data))
+  vim.uv.fs_close(fd)
 end
 
 function M.load_state()
@@ -249,8 +252,13 @@ function M.load_state()
     return
   end
 
+  local fd = assert(vim.uv.fs_open(state_file, "r", state_chmod))
+  local stat = assert(vim.uv.fs_fstat(fd))
+  local data = assert(vim.uv.fs_read(fd, stat.size, 0))
+  vim.uv.fs_close(fd)
+
   ---@type Timer[]
-  local old_timers = vim.fn.json_decode(vim.fn.readfile(state_file))
+  local old_timers = vim.json.decode(data)
   local cur_time = os.time()
 
   for _, opts in ipairs(old_timers) do
