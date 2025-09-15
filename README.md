@@ -62,8 +62,7 @@ extra suger, such as pausing and resuming.
 - It’s not a plugin limited to specific timer presets, like pomodoro timers.
 [You can create them](#pomodoro-25-5-timer), but you can also do much more.
 - It’s not a plugin that implements its own runtime from scratch. `libuv` is
-already good enough - we simply provide a more ergonomic interface to work with
-it.
+already good enough - we simply provide more sugar to work with it.
 
 ## Demo
 
