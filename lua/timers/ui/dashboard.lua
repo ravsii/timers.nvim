@@ -184,26 +184,26 @@ function D:draw()
 
   local content_height = #big_timer_segment + #timers_segment
 
-  -- Center vertically and horizontally
-  local top_padding = math.floor((h - content_height) / 2)
   local content = {} ---@type Lines
 
-  local offset = 1
-  for _ = 1, top_padding do
-    table.insert(content, {})
-    offset = offset + 1
+  ---@param n integer? repeat n times.
+  local function empty_line(n)
+    for _ = 1, (n or 1) do
+      table.insert(content, {})
+    end
   end
+
+  local top_padding = math.floor((h - content_height) / 2)
+  empty_line(top_padding)
 
   for _, line in ipairs(big_timer_segment) do
     local lw = line_width(line)
     local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
     table.insert(line, 1, { str = left_padding_chars })
-    offset = offset + 1
     table.insert(content, line)
   end
 
-  table.insert(content, {})
-  offset = offset + 1
+  empty_line()
 
   self.cursor_positions = {}
   for i, line in ipairs(timers_segment) do
@@ -214,20 +214,19 @@ function D:draw()
     if #timers > 0 then
       self.cursor_positions[i] = {
         id = timers[i].id,
-        pos = { offset + i - 1, #left_padding_chars },
+        pos = { #content, #left_padding_chars },
       }
     end
   end
 
-  for _ = 1, top_padding - 3 do
-    table.insert(content, {})
-  end
+  empty_line(top_padding - 3)
+
   local line = binds_segment
   local lw = line_width(line)
   local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
   table.insert(line, 1, { str = left_padding_chars })
   table.insert(content, line)
-  table.insert(content, {})
+  empty_line()
 
   vim.bo[self.buf].modifiable = true
 
