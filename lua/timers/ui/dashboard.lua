@@ -20,60 +20,15 @@ local utils = require("timers.ui.utils")
 ---@field font? "DiamFont"|"Terrace"|"tmplr"|string
 ---@field fonts? FontTable
 
----@private
----@return TimersList timers List of active timers, sorted by expiration
-local function active_timers()
-  local timers = {} ---@type TimersList
-
-  for id, at in pairs(manager.timers()) do
-    table.insert(timers, { id = id, t = at })
-  end
-
-  --- sort by remaining first
-  table.sort(timers, function(a, b)
-    return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds()
-  end)
-
-  return timers
-end
-
----@param timers TimersList list of timers to convert
----@return Lines lines lines to output
-local function make_timer_segments(timers)
-  if #timers == 0 then
-    return { { {
-      str = "No active timers",
-      hl = "Comment",
-    } } }
-  end
-
-  local segments = {} ---@type Segments
-  for _, item in pairs(timers) do
-    local str = "ID: "
-      .. item.id
-      .. " | "
-      .. item.t.icon
-      .. " "
-      .. item.t.title
-      .. ": "
-      .. item.t.message
-      .. " | Time left: "
-      .. item.t:expire_in():into_hms()
-      .. (item.t.paused_at and " (paused)" or "")
-
-    table.insert(segments, { { str = str } })
-  end
-
-  return segments
-end
+local augroup = vim.api.nvim_create_augroup("timers.nvim/dashboard", { clear = true })
+local namespace = vim.api.nvim_create_namespace("timers.nvim/dashboard")
 
 ---@class Dashboard
 local D = {
-  cursor_position = -1,
   win = nil,
   buf = nil,
-  augroup = vim.api.nvim_create_augroup("timers.nvim/dashboard", { clear = true }),
-  namespace = vim.api.nvim_create_namespace("timers.nvim/dashboard"),
+
+  cursor_position = -1,
 }
 
 function D:show()
@@ -111,7 +66,7 @@ function D:show()
   vim.api.nvim_win_set_buf(self.win, self.buf)
 
   vim.api.nvim_create_autocmd({ "VimResized", "WinResized" }, {
-    group = self.augroup,
+    group = augroup,
     callback = function()
       if vim.api.nvim_win_is_valid(self.win) then
         ---@diagnostic disable-next-line: redefined-local
@@ -129,7 +84,7 @@ function D:show()
   })
 
   vim.api.nvim_create_autocmd("WinClosed", {
-    group = self.augroup,
+    group = augroup,
     buffer = self.buf,
     callback = function()
       D:destroy()
@@ -160,7 +115,7 @@ function D:show()
 
   -- cursor lock
   vim.api.nvim_create_autocmd({ "CursorMoved" }, {
-    group = self.augroup,
+    group = augroup,
     callback = function()
       D:move_cursor(0)
     end,
@@ -192,7 +147,7 @@ local function line_width(line)
 end
 
 function D:draw()
-  local timers = active_timers()
+  local timers = self.active_timers()
 
   local big_timer_segment = {}
   if #timers > 0 then
@@ -200,7 +155,7 @@ function D:draw()
     big_timer_segment = into_segments(big_timer, "Statement")
   end
 
-  local timers_segment = make_timer_segments(timers)
+  local timers_segment = self.make_timer_segments(timers)
 
   local binds = {
     { key = "k / ", text = "up" },
@@ -285,7 +240,7 @@ function D:draw()
     local line_nr = i - 1
     for _, seg in ipairs(segments) do
       if seg.hl and #seg.str > 0 then
-        vim.api.nvim_buf_set_extmark(self.buf, self.namespace, line_nr, col, {
+        vim.api.nvim_buf_set_extmark(self.buf, namespace, line_nr, col, {
           end_col = col + #seg.str,
           hl_group = seg.hl,
         })
@@ -307,7 +262,7 @@ function D:size()
 end
 
 function D:cancel_selected()
-  local timers = active_timers()
+  local timers = self.active_timers()
   if #timers == 0 or self.cursor_position <= 0 then
     return
   end
@@ -325,7 +280,7 @@ end
 --- - 1 go down
 ---@param direction -1|0|1
 function D:move_cursor(direction)
-  local timers = active_timers()
+  local timers = self.active_timers()
   if #timers == 0 then
     self.cursor_position = -1
   end
@@ -338,7 +293,7 @@ function D:destroy()
   if self.win and vim.api.nvim_win_is_valid(self.win) then
     vim.api.nvim_win_close(self.win, true)
   end
-  vim.api.nvim_clear_autocmds({ group = self.augroup })
+  vim.api.nvim_clear_autocmds({ group = augroup })
   D:reset()
 end
 
@@ -353,4 +308,51 @@ function D:reset()
   end
 end
 
+---@private
+---@return TimersList timers List of active timers, sorted by expiration
+function D.active_timers()
+  local timers = {} ---@type TimersList
+
+  for id, at in pairs(manager.timers()) do
+    table.insert(timers, { id = id, t = at })
+  end
+
+  --- sort by remaining first
+  table.sort(timers, function(a, b)
+    return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds()
+  end)
+
+  return timers
+end
+
+---@private
+---@param timers TimersList list of timers to convert
+---@return Lines lines lines to output
+function D.make_timer_segments(timers)
+  if #timers == 0 then
+    return { { {
+      str = "No active timers",
+      hl = "Comment",
+    } } }
+  end
+
+  local segments = {} ---@type Segments
+  for _, item in pairs(timers) do
+    local str = "ID: "
+      .. item.id
+      .. " | "
+      .. item.t.icon
+      .. " "
+      .. item.t.title
+      .. ": "
+      .. item.t.message
+      .. " | Time left: "
+      .. item.t:expire_in():into_hms()
+      .. (item.t.paused_at and " (paused)" or "")
+
+    table.insert(segments, { { str = str } })
+  end
+
+  return segments
+end
 return D
