@@ -7,7 +7,9 @@ local unit = require("timers.unit")
 local state_file = vim.fn.stdpath("data") .. "/timers.nvim/timers.json"
 local state_chmod = 420 -- 644
 
----@alias TimerTable table<integer, Timer>
+---Represents a unique timer id, that manager can work with.
+---@alias TimerID integer
+---@alias TimerTable table<TimerID, Timer>
 
 ---@alias InternalTable table<integer, InternalTableItem>
 ---@alias InternalTableItem { timer: Timer, _uv: uv.uv_timer_t, }

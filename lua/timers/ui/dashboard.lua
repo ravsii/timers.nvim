@@ -28,7 +28,13 @@ local D = {
   win = nil,
   buf = nil,
 
+  ---Represents current cursor position. If out of bounds, it will be corrected
+  ---to the nearest available position.
+  ---@alias CursorPos integer
+  ---@type CursorPos
   cursor_position = -1,
+  ---@type { [CursorPos]: { id: TimerID, pos: integer[] } }
+  cursor_positions = {},
 }
 
 function D:show()
@@ -199,13 +205,18 @@ function D:draw()
   table.insert(content, {})
   offset = offset + 1
 
-  local c_pos = {}
+  self.cursor_positions = {}
   for i, line in ipairs(timers_segment) do
     local lw = line_width(line)
     local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
     table.insert(line, 1, { str = left_padding_chars })
     table.insert(content, line)
-    c_pos[i] = { offset + i - 1, #left_padding_chars }
+    if #timers > 0 then
+      self.cursor_positions[i] = {
+        id = timers[i].id,
+        pos = { offset + i - 1, #left_padding_chars },
+      }
+    end
   end
 
   for _ = 1, top_padding - 3 do
@@ -232,7 +243,11 @@ function D:draw()
 
   -- Write lines first
   vim.api.nvim_buf_set_lines(self.buf, 0, -1, false, ll)
-  vim.api.nvim_win_set_cursor(self.win, c_pos[self.cursor_position])
+  if #self.cursor_positions > 0 then
+    vim.api.nvim_win_set_cursor(self.win, self.cursor_positions[self.cursor_position].pos)
+  else
+    vim.api.nvim_win_set_cursor(self.win, { 1, 0 })
+  end
 
   -- Apply highlights
   for i, segments in ipairs(content) do
@@ -355,4 +370,5 @@ function D.make_timer_segments(timers)
 
   return segments
 end
+
 return D
