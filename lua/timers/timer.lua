@@ -3,7 +3,7 @@ local duration = require("timers.duration")
 local unit = require("timers.unit")
 
 ---Represents a time returned by os.time() in seconds.
----@alias time number
+---@alias time integer
 
 ---@class TimerOpts
 ---Message that shows up on timer finish.
