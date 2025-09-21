@@ -5,15 +5,13 @@ local notify_opts = { icon = "󱎫", title = "timers.nvim" }
 ---@alias TimersListItem { id: number, t: Timer }
 ---@alias TimersList TimersListItem[],
 
+---@param timers_table TimersTable
 ---@return TimersList
-local function active_timers_list()
-  ---@type TimersList
-  local timers = {}
-
-  for id, at in pairs(manager.timers()) do
+local function tbl_to_list(timers_table)
+  local timers = {} ---@type TimersList
+  for id, at in pairs(timers_table) do
     table.insert(timers, { id = id, t = at })
   end
-
   return timers
 end
 
@@ -43,7 +41,7 @@ function UI.active_timers()
   end
 
   vim.ui.select(
-    active_timers_list(),
+    tbl_to_list(manager.timers()),
     { prompt = "Active Timers", format_item = format_item_select },
     function() end
   )
@@ -68,7 +66,7 @@ function UI.cancel(id)
   end
 
   vim.ui.select(
-    active_timers_list(),
+    tbl_to_list(manager.timers()),
     { prompt = "Select a timer to cancel", format_item = format_item_select },
     ---@param item? TimersListItem
     function(item)
@@ -128,7 +126,7 @@ function UI.pause(id)
   end
 
   vim.ui.select(
-    active_timers_list(),
+    tbl_to_list(running_timers),
     { prompt = "Select a timer to pause", format_item = format_item_select },
     ---@param item? TimersListItem
     function(item)
@@ -168,7 +166,7 @@ function UI.resume(id)
   end
 
   vim.ui.select(
-    active_timers_list(),
+    tbl_to_list(paused_timers),
     { prompt = "Select a timer to resume", format_item = format_item_select },
     ---@param item? TimersListItem
     function(item)

@@ -7,7 +7,9 @@ local unit = require("timers.unit")
 local state_file = vim.fn.stdpath("data") .. "/timers.nvim/timers.json"
 local state_chmod = 420 -- 644
 
----@alias TimerTable table<integer, Timer>
+---Represents a unique timer id, that manager can work with.
+---@alias TimerID integer
+---@alias TimersTable table<TimerID, Timer>
 
 ---@alias InternalTable table<integer, InternalTableItem>
 ---@alias InternalTableItem { timer: Timer, _uv: uv.uv_timer_t, }
@@ -112,9 +114,9 @@ function M.get_closest_timer()
 end
 
 ---Returns all initialized timers, both running and paused.
----@return TimerTable
+---@return TimersTable
 function M.timers()
-  local result = {} ---@type TimerTable
+  local result = {} ---@type TimersTable
 
   for id, t in pairs(M.active_timers) do
     result[id] = t.timer
@@ -139,22 +141,22 @@ end
 ---@return boolean resumed true if the timer exists, was paused and resumed.
 function M.resume(id)
   local item = M.active_timers[id]
-  if item == nil then
+  if not item then
     return false
   end
 
   local t = item.timer
-
-  if t.paused_at == nil then
+  if not t.paused_at then
     return false
   end
 
-  local ostime = os.time()
-  local diff = ostime - t.paused_at
+  local elapsed = t.paused_at - t.started_at
+  local now = os.time()
   t.paused_at = nil
-  t.started_at = ostime
+  t.started_at = now
 
-  item._uv:start(t.duration:sub(diff * unit.SECOND):asMilliseconds(), 0, function()
+  t.duration = t.duration:sub(elapsed * unit.SECOND)
+  item._uv:start(t.duration:asMilliseconds(), 0, function()
     M.cancel(id)
     if t.on_finish then
       t.on_finish(t, id)
@@ -163,9 +165,7 @@ function M.resume(id)
     end
   end)
 
-  M.active_timers[id].timer = t
   M.save_state()
-
   return true
 end
 
@@ -174,19 +174,17 @@ end
 ---@return boolean paused true if the timer was found and paused.
 function M.pause(id)
   local item = M.active_timers[id]
-  if item == nil then
+  if not item then
     return false
   end
 
-  if item.timer.paused_at ~= nil then
+  if item.timer.paused_at then
     return false
   end
 
   item._uv:stop()
   item.timer.paused_at = os.time()
-  M.active_timers[id] = item
   M.save_state()
-
   return true
 end
 

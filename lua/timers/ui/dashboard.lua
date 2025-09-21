@@ -20,60 +20,21 @@ local utils = require("timers.ui.utils")
 ---@field font? "DiamFont"|"Terrace"|"tmplr"|string
 ---@field fonts? FontTable
 
----@private
----@return TimersList timers List of active timers, sorted by expiration
-local function active_timers()
-  local timers = {} ---@type TimersList
-
-  for id, at in pairs(manager.timers()) do
-    table.insert(timers, { id = id, t = at })
-  end
-
-  --- sort by remaining first
-  table.sort(timers, function(a, b)
-    return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds()
-  end)
-
-  return timers
-end
-
----@param timers TimersList list of timers to convert
----@return Lines lines lines to output
-local function make_timer_segments(timers)
-  if #timers == 0 then
-    return { { {
-      str = "No active timers",
-      hl = "Comment",
-    } } }
-  end
-
-  local segments = {} ---@type Segments
-  for _, item in pairs(timers) do
-    local str = "ID: "
-      .. item.id
-      .. " | "
-      .. item.t.icon
-      .. " "
-      .. item.t.title
-      .. ": "
-      .. item.t.message
-      .. " | Time left: "
-      .. item.t:expire_in():into_hms()
-      .. (item.t.paused_at and " (paused)" or "")
-
-    table.insert(segments, { { str = str } })
-  end
-
-  return segments
-end
+local augroup = vim.api.nvim_create_augroup("timers.nvim/dashboard", { clear = true })
+local namespace = vim.api.nvim_create_namespace("timers.nvim/dashboard")
 
 ---@class Dashboard
 local D = {
-  cursor_position = -1,
   win = nil,
   buf = nil,
-  augroup = vim.api.nvim_create_augroup("timers.nvim/dashboard", { clear = true }),
-  namespace = vim.api.nvim_create_namespace("timers.nvim/dashboard"),
+
+  ---Represents current cursor position. If out of bounds, it will be corrected
+  ---to the nearest available position.
+  ---@alias CursorPos integer
+  ---@type CursorPos
+  cursor_position = -1,
+  ---@type { [CursorPos]: TimerID }
+  pos_to_timer_id = {},
 }
 
 function D:show()
@@ -111,7 +72,7 @@ function D:show()
   vim.api.nvim_win_set_buf(self.win, self.buf)
 
   vim.api.nvim_create_autocmd({ "VimResized", "WinResized" }, {
-    group = self.augroup,
+    group = augroup,
     callback = function()
       if vim.api.nvim_win_is_valid(self.win) then
         ---@diagnostic disable-next-line: redefined-local
@@ -129,7 +90,7 @@ function D:show()
   })
 
   vim.api.nvim_create_autocmd("WinClosed", {
-    group = self.augroup,
+    group = augroup,
     buffer = self.buf,
     callback = function()
       D:destroy()
@@ -153,6 +114,12 @@ function D:show()
     self:cancel_selected()
   end, { buffer = self.buf })
   vim.keymap.set("n", "C", ui.cancel_all, { buffer = self.buf })
+  vim.keymap.set("n", "r", function()
+    self:resume_selected()
+  end, { buffer = self.buf })
+  vim.keymap.set("n", "p", function()
+    self:pause_selected()
+  end, { buffer = self.buf })
 
   vim.keymap.set("n", "q", function()
     D:destroy()
@@ -160,12 +127,26 @@ function D:show()
 
   -- cursor lock
   vim.api.nvim_create_autocmd({ "CursorMoved" }, {
-    group = self.augroup,
+    group = augroup,
     callback = function()
       D:move_cursor(0)
     end,
   })
 end
+
+local binds = {
+  {
+    { key = "k / ", text = "up" },
+    { key = "j / ", text = "down" },
+    { key = "r", text = "resume" },
+    { key = "p", text = "pause" },
+    { key = "c", text = "cancel" },
+  },
+  {
+    { key = "C", text = "cancel all" },
+    { key = "q", text = "quit" },
+  },
+}
 
 ---Converts a list of strings into lines of segments with the given highlight group.
 ---@param lines string[]
@@ -191,77 +172,109 @@ local function line_width(line)
   return sum
 end
 
+---Draws a dashboard.
+---The general idea is pretty simple, we build multiple segments in a single
+---"content" storage, then calculate paddings based on amount of content and
+---then draw everything.
+---@private
 function D:draw()
-  local timers = active_timers()
+  local timers = self.active_timers()
 
   local big_timer_segment = {}
   if #timers > 0 then
-    local big_timer = fonts.from_duration(timers[1].t:expire_in(), config.dashboard.font)
-    big_timer_segment = into_segments(big_timer, "Statement")
+    local closest_timer ---@type Timer
+    for _, tbl in pairs(timers) do
+      if not tbl.t.paused_at then
+        closest_timer = tbl.t
+        break
+      end
+    end
+
+    if closest_timer then
+      local big_timer = fonts.from_duration(closest_timer:expire_in(), config.dashboard.font)
+      big_timer_segment = into_segments(big_timer, "Statement")
+    end
   end
 
-  local timers_segment = make_timer_segments(timers)
+  local timers_segment = self.make_timer_segments(timers)
 
-  local binds = {
-    { key = "k / ", text = "up" },
-    { key = "j / ", text = "down" },
-    { key = "c", text = "cancel selected" },
-    { key = "C", text = "cancel all" },
-    { key = "q", text = "quit" },
-  }
-
-  local binds_segment = {} ---@type Segments
-  for i, bind in ipairs(binds) do
-    if i > 1 then
-      binds_segment[#binds_segment + 1] = { str = " | ", hl = "Comment" }
+  local binds_segment = {} ---@type Lines
+  for _, bind_line in pairs(binds) do
+    local segment = {} ---@type Segments
+    for i, bind in ipairs(bind_line) do
+      if i > 1 then
+        segment[#segment + 1] = { str = " | ", hl = "Comment" }
+      end
+      segment[#segment + 1] = { str = "[" .. bind.key .. "]", hl = "Character" }
+      segment[#segment + 1] = { str = " " .. bind.text }
     end
-    binds_segment[#binds_segment + 1] = { str = bind.key, hl = "Character" }
-    binds_segment[#binds_segment + 1] = { str = " - " .. bind.text }
+    binds_segment[#binds_segment + 1] = segment
   end
 
   local w, h = D:size()
-
-  local content_height = #big_timer_segment + #timers_segment
-
-  -- Center vertically and horizontally
-  local top_padding = math.floor((h - content_height) / 2)
   local content = {} ---@type Lines
-
-  local offset = 1
-  for _ = 1, top_padding do
-    table.insert(content, {})
-    offset = offset + 1
-  end
 
   for _, line in ipairs(big_timer_segment) do
     local lw = line_width(line)
     local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
     table.insert(line, 1, { str = left_padding_chars })
-    offset = offset + 1
     table.insert(content, line)
   end
 
-  table.insert(content, {})
-  offset = offset + 1
+  self.pos_to_timer_id = {}
+  if #timers > 0 then
+    for i, line in ipairs(timers_segment) do
+      local lw = line_width(line)
+      local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
+      table.insert(line, 1, { str = left_padding_chars })
+      table.insert(content, line)
+      if #timers > 0 then
+        self.pos_to_timer_id[i] = timers[i].id
+      end
+    end
+  else
+    table.insert(content, { {
+      str = "No active timers",
+      hl = "Comment",
+    } })
+  end
 
-  local c_pos = {}
-  for i, line in ipairs(timers_segment) do
+  for _, line in pairs(binds_segment) do
     local lw = line_width(line)
     local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
     table.insert(line, 1, { str = left_padding_chars })
     table.insert(content, line)
-    c_pos[i] = { offset + i - 1, #left_padding_chars }
   end
 
-  for _ = 1, top_padding - 3 do
-    table.insert(content, {})
+  local max_height = h - #binds
+  local content_height = #content - #binds
+
+  -- how many empty rows we can add
+  -- "-1" is extra padding from the bottom for binds
+  local total_padding = max_height - content_height - 1
+  local base = math.floor(total_padding / 3)
+  local extra = total_padding % 3 -- distribute remainder
+
+  local padding_top = base
+  local padding_middle = base
+  local padding_bottom = base
+
+  if extra >= 1 then
+    padding_top = padding_top + 1
   end
-  local line = binds_segment
-  local lw = line_width(line)
-  local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
-  table.insert(line, 1, { str = left_padding_chars })
-  table.insert(content, line)
-  table.insert(content, {})
+  if extra >= 2 then
+    padding_middle = padding_middle + 1
+  end
+
+  for _ = 1, padding_bottom do
+    table.insert(content, #content - #binds + 1, {})
+  end
+  for _ = 1, padding_middle do
+    table.insert(content, #big_timer_segment + 1, {})
+  end
+  for _ = 1, padding_top do
+    table.insert(content, 1, {})
+  end
 
   vim.bo[self.buf].modifiable = true
 
@@ -270,14 +283,22 @@ function D:draw()
   for _, segments in ipairs(content) do
     local line_text = ""
     for _, seg in ipairs(segments) do
-      line_text = line_text .. seg.str
+      line_text = line_text .. (seg.str or "")
     end
     table.insert(ll, line_text)
   end
 
+  local cursor_offset = padding_middle + padding_top + #big_timer_segment
+
   -- Write lines first
   vim.api.nvim_buf_set_lines(self.buf, 0, -1, false, ll)
-  vim.api.nvim_win_set_cursor(self.win, c_pos[self.cursor_position])
+  if #self.pos_to_timer_id > 0 then
+    local row = self.cursor_position + cursor_offset
+    local col = utils.first_char_pos(self.buf, row)
+    vim.api.nvim_win_set_cursor(self.win, { row, col })
+  else
+    vim.api.nvim_win_set_cursor(self.win, { 1, 0 })
+  end
 
   -- Apply highlights
   for i, segments in ipairs(content) do
@@ -285,12 +306,12 @@ function D:draw()
     local line_nr = i - 1
     for _, seg in ipairs(segments) do
       if seg.hl and #seg.str > 0 then
-        vim.api.nvim_buf_set_extmark(self.buf, self.namespace, line_nr, col, {
+        vim.api.nvim_buf_set_extmark(self.buf, namespace, line_nr, col, {
           end_col = col + #seg.str,
           hl_group = seg.hl,
         })
       end
-      col = col + #seg.str
+      col = col + (seg.str and #seg.str or 0)
     end
   end
 
@@ -307,25 +328,42 @@ function D:size()
 end
 
 function D:cancel_selected()
-  local timers = active_timers()
-  if #timers == 0 or self.cursor_position <= 0 then
+  if self.cursor_position == -1 then
     return
   end
 
-  ui.cancel(timers[self.cursor_position].id)
+  local id = self.pos_to_timer_id[self.cursor_position]
+  ui.cancel(id)
+  D:move_cursor(0)
+end
 
-  if self.cursor_position == #timers then
-    D:move_cursor(-1)
+function D:pause_selected()
+  if self.cursor_position == -1 then
+    return
   end
+
+  local id = self.pos_to_timer_id[self.cursor_position]
+  ui.pause(id)
+  D:move_cursor(0)
+end
+
+function D:resume_selected()
+  if self.cursor_position == -1 then
+    return
+  end
+
+  local id = self.pos_to_timer_id[self.cursor_position]
+  ui.resume(id)
+  D:move_cursor(0)
 end
 
 ---Represents a neovim line like direction where to move cursor:
---- - -1 go up
---- - 0 same position;
---- - 1 go down
----@param direction -1|0|1
+---@param direction
+---| -1 go up
+---| 0 same position; useful for checks, if the current position is still valid.
+---| 1 go down
 function D:move_cursor(direction)
-  local timers = active_timers()
+  local timers = self.active_timers()
   if #timers == 0 then
     self.cursor_position = -1
   end
@@ -338,7 +376,7 @@ function D:destroy()
   if self.win and vim.api.nvim_win_is_valid(self.win) then
     vim.api.nvim_win_close(self.win, true)
   end
-  vim.api.nvim_clear_autocmds({ group = self.augroup })
+  vim.api.nvim_clear_autocmds({ group = augroup })
   D:reset()
 end
 
@@ -351,6 +389,47 @@ function D:reset()
     self.timer:close()
     self.timer = nil
   end
+end
+
+---@private
+---@return TimersList timers List of active timers, sorted by expiration
+function D.active_timers()
+  local timers = {} ---@type TimersList
+
+  for id, at in pairs(manager.timers()) do
+    table.insert(timers, { id = id, t = at })
+  end
+
+  --- sort by remaining first
+  table.sort(timers, function(a, b)
+    return a.t:expire_in():asMilliseconds() < b.t:expire_in():asMilliseconds()
+  end)
+
+  return timers
+end
+
+---@private
+---@param timers TimersList list of timers to convert
+---@return Lines lines lines to output
+function D.make_timer_segments(timers)
+  local segments = {} ---@type Segments
+  for _, item in pairs(timers) do
+    local str = "ID: "
+      .. item.id
+      .. " | "
+      .. item.t.icon
+      .. " "
+      .. item.t.title
+      .. ": "
+      .. item.t.message
+      .. " | Time left: "
+      .. item.t:expire_in():into_hms()
+      .. (item.t.paused_at and " (paused)" or "")
+
+    table.insert(segments, { { str = str } })
+  end
+
+  return segments
 end
 
 return D

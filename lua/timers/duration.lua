@@ -1,4 +1,5 @@
 local unit = require("timers.unit")
+
 ---@class Duration
 ---@field value integer Duration in milliseconds
 local Duration = {}
@@ -29,11 +30,11 @@ end
 ---@param sub Duration|number If number, it's converted to Duration as ms.
 ---@return Duration result
 function Duration:sub(sub)
-  local val = 0
-  if type(sub) == "number" then
-    val = self.value - sub
-  else
+  local val
+  if type(sub) == "Duration" then
     val = self.value - sub.value
+  else
+    val = self.value - sub
   end
 
   return Duration.from(math.max(val, 0))
