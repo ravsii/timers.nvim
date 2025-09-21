@@ -33,8 +33,8 @@ local D = {
   ---@alias CursorPos integer
   ---@type CursorPos
   cursor_position = -1,
-  ---@type { [CursorPos]: { id: TimerID, pos: integer[] } }
-  cursor_positions = {},
+  ---@type { [CursorPos]: TimerID }
+  pos_to_timer_id = {},
 }
 
 function D:show()
@@ -114,6 +114,12 @@ function D:show()
     self:cancel_selected()
   end, { buffer = self.buf })
   vim.keymap.set("n", "C", ui.cancel_all, { buffer = self.buf })
+  vim.keymap.set("n", "r", function()
+    self:resume_selected()
+  end, { buffer = self.buf })
+  vim.keymap.set("n", "p", function()
+    self:pause_selected()
+  end, { buffer = self.buf })
 
   vim.keymap.set("n", "q", function()
     D:destroy()
@@ -205,18 +211,22 @@ function D:draw()
     table.insert(content, line)
   end
 
-  self.cursor_positions = {}
-  for i, line in ipairs(timers_segment) do
-    local lw = line_width(line)
-    local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
-    table.insert(line, 1, { str = left_padding_chars })
-    table.insert(content, line)
-    if #timers > 0 then
-      self.cursor_positions[i] = {
-        id = timers[i].id,
-        pos = { #content, #left_padding_chars },
-      }
+  self.pos_to_timer_id = {}
+  if #timers > 0 then
+    for i, line in ipairs(timers_segment) do
+      local lw = line_width(line)
+      local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
+      table.insert(line, 1, { str = left_padding_chars })
+      table.insert(content, line)
+      if #timers > 0 then
+        self.pos_to_timer_id[i] = timers[i].id
+      end
     end
+  else
+    table.insert(content, { {
+      str = "No active timers",
+      hl = "Comment",
+    } })
   end
 
   for _, line in pairs(binds_segment) do
@@ -268,10 +278,14 @@ function D:draw()
     table.insert(ll, line_text)
   end
 
+  local cursor_offset = padding_middle + padding_top + #big_timer_segment
+
   -- Write lines first
   vim.api.nvim_buf_set_lines(self.buf, 0, -1, false, ll)
-  if #self.cursor_positions > 0 then
-    vim.api.nvim_win_set_cursor(self.win, self.cursor_positions[self.cursor_position].pos)
+  if #self.pos_to_timer_id > 0 then
+    local row = self.cursor_position + cursor_offset
+    local col = utils.first_char_pos(self.buf, row)
+    vim.api.nvim_win_set_cursor(self.win, { row, col })
   else
     vim.api.nvim_win_set_cursor(self.win, { 1, 0 })
   end
@@ -304,23 +318,40 @@ function D:size()
 end
 
 function D:cancel_selected()
-  local timers = self.active_timers()
-  if #timers == 0 or self.cursor_position <= 0 then
+  if self.cursor_position == -1 then
     return
   end
 
-  ui.cancel(timers[self.cursor_position].id)
+  local id = self.pos_to_timer_id[self.cursor_position]
+  ui.cancel(id)
+  D:move_cursor(0)
+end
 
-  if self.cursor_position == #timers then
-    D:move_cursor(-1)
+function D:pause_selected()
+  if self.cursor_position == -1 then
+    return
   end
+
+  local id = self.pos_to_timer_id[self.cursor_position]
+  ui.pause(id)
+  D:move_cursor(0)
+end
+
+function D:resume_selected()
+  if self.cursor_position == -1 then
+    return
+  end
+
+  local id = self.pos_to_timer_id[self.cursor_position]
+  ui.resume(id)
+  D:move_cursor(0)
 end
 
 ---Represents a neovim line like direction where to move cursor:
---- - -1 go up
---- - 0 same position;
---- - 1 go down
----@param direction -1|0|1
+---@param direction
+---| -1 go up
+---| 0 same position; useful for checks, if the current position is still valid.
+---| 1 go down
 function D:move_cursor(direction)
   local timers = self.active_timers()
   if #timers == 0 then
@@ -371,13 +402,6 @@ end
 ---@param timers TimersList list of timers to convert
 ---@return Lines lines lines to output
 function D.make_timer_segments(timers)
-  if #timers == 0 then
-    return { { {
-      str = "No active timers",
-      hl = "Comment",
-    } } }
-  end
-
   local segments = {} ---@type Segments
   for _, item in pairs(timers) do
     local str = "ID: "
