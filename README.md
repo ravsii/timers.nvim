@@ -323,7 +323,8 @@ If you like command-style  (`<cmd>TimersDashboard<cr>`) binds more,  see: [comma
 - `:TimerCancelAll` - Cancel all active timers.
 - `:TimerDashboard` — Opens the dashboard. This is still a work in progress and
 mainly serves as a proof of concept.
-![Dashboard showcase](./pics/dashboard.jpg)
+<img width="2416" height="1324" alt="image" src="https://github.com/user-attachments/assets/397bdf89-d52c-4ed8-a629-0f7ea5b15d88" />
+
 
 > [!NOTE]
 >
