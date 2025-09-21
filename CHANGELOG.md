@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0](https://github.com/ravsii/timers.nvim/compare/v0.3.2...v0.4.0) (2025-09-21)
+
+
+### Features
+
+* **dashboard:** add pause/resume to dashboard ([89a2b21](https://github.com/ravsii/timers.nvim/commit/89a2b219be37b6892ecbfe36cb47d524d4bb7dd2))
+* **dashboard:** better padding ([f82c033](https://github.com/ravsii/timers.nvim/commit/f82c0338dd517b61b8bbc98d6b398df9d32a9052))
+
+
+### Bug Fixes
+
+* **dashboard:** big timer no longer uses paused timers ([01f0cbd](https://github.com/ravsii/timers.nvim/commit/01f0cbd45d3992510c29efac70b39955544ab8e4))
+* **manager:** wrong duration on resuming ([97a639b](https://github.com/ravsii/timers.nvim/commit/97a639bbd4132d20b5d6339bbe12cf138c5531a8))
+* **ui:** correct handling paused/active timers for pause/resume selects ([4d6eee4](https://github.com/ravsii/timers.nvim/commit/4d6eee4af60600007b5f92fc0999300739c16684))
+
 ## [0.3.2](https://github.com/ravsii/timers.nvim/compare/v0.3.1...v0.3.2) (2025-09-15)
 
 
