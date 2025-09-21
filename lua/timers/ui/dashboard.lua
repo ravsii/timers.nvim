@@ -128,6 +128,20 @@ function D:show()
   })
 end
 
+local binds = {
+  {
+    { key = "k / ", text = "up" },
+    { key = "j / ", text = "down" },
+    { key = "r", text = "resume" },
+    { key = "p", text = "pause" },
+    { key = "c", text = "cancel" },
+  },
+  {
+    { key = "C", text = "cancel all" },
+    { key = "q", text = "quit" },
+  },
+}
+
 ---Converts a list of strings into lines of segments with the given highlight group.
 ---@param lines string[]
 ---@param hl? string
@@ -152,6 +166,11 @@ local function line_width(line)
   return sum
 end
 
+---Draws a dashboard.
+---The general idea is pretty simple, we build multiple segments in a single
+---"content" storage, then calculate paddings based on amount of content and
+---then draw everything.
+---@private
 function D:draw()
   local timers = self.active_timers()
 
@@ -163,38 +182,21 @@ function D:draw()
 
   local timers_segment = self.make_timer_segments(timers)
 
-  local binds = {
-    { key = "k / ", text = "up" },
-    { key = "j / ", text = "down" },
-    { key = "c", text = "cancel selected" },
-    { key = "C", text = "cancel all" },
-    { key = "q", text = "quit" },
-  }
-
-  local binds_segment = {} ---@type Segments
-  for i, bind in ipairs(binds) do
-    if i > 1 then
-      binds_segment[#binds_segment + 1] = { str = " | ", hl = "Comment" }
+  local binds_segment = {} ---@type Lines
+  for _, bind_line in pairs(binds) do
+    local segment = {} ---@type Segments
+    for i, bind in ipairs(bind_line) do
+      if i > 1 then
+        segment[#segment + 1] = { str = " | ", hl = "Comment" }
+      end
+      segment[#segment + 1] = { str = "[" .. bind.key .. "]", hl = "Character" }
+      segment[#segment + 1] = { str = " " .. bind.text }
     end
-    binds_segment[#binds_segment + 1] = { str = bind.key, hl = "Character" }
-    binds_segment[#binds_segment + 1] = { str = " - " .. bind.text }
+    binds_segment[#binds_segment + 1] = segment
   end
 
   local w, h = D:size()
-
-  local content_height = #big_timer_segment + #timers_segment
-
   local content = {} ---@type Lines
-
-  ---@param n integer? repeat n times.
-  local function empty_line(n)
-    for _ = 1, (n or 1) do
-      table.insert(content, {})
-    end
-  end
-
-  local top_padding = math.floor((h - content_height) / 2)
-  empty_line(top_padding)
 
   for _, line in ipairs(big_timer_segment) do
     local lw = line_width(line)
@@ -202,8 +204,6 @@ function D:draw()
     table.insert(line, 1, { str = left_padding_chars })
     table.insert(content, line)
   end
-
-  empty_line()
 
   self.cursor_positions = {}
   for i, line in ipairs(timers_segment) do
@@ -219,14 +219,42 @@ function D:draw()
     end
   end
 
-  empty_line(top_padding - 3)
+  for _, line in pairs(binds_segment) do
+    local lw = line_width(line)
+    local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
+    table.insert(line, 1, { str = left_padding_chars })
+    table.insert(content, line)
+  end
 
-  local line = binds_segment
-  local lw = line_width(line)
-  local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
-  table.insert(line, 1, { str = left_padding_chars })
-  table.insert(content, line)
-  empty_line()
+  local max_height = h - #binds
+  local content_height = #content - #binds
+
+  -- how many empty rows we can add
+  -- "-1" is extra padding from the bottom for binds
+  local total_padding = max_height - content_height - 1
+  local base = math.floor(total_padding / 3)
+  local extra = total_padding % 3 -- distribute remainder
+
+  local padding_top = base
+  local padding_middle = base
+  local padding_bottom = base
+
+  if extra >= 1 then
+    padding_top = padding_top + 1
+  end
+  if extra >= 2 then
+    padding_middle = padding_middle + 1
+  end
+
+  for _ = 1, padding_bottom do
+    table.insert(content, #content - #binds + 1, {})
+  end
+  for _ = 1, padding_middle do
+    table.insert(content, #big_timer_segment + 1, {})
+  end
+  for _ = 1, padding_top do
+    table.insert(content, 1, {})
+  end
 
   vim.bo[self.buf].modifiable = true
 
@@ -235,7 +263,7 @@ function D:draw()
   for _, segments in ipairs(content) do
     local line_text = ""
     for _, seg in ipairs(segments) do
-      line_text = line_text .. seg.str
+      line_text = line_text .. (seg.str or "")
     end
     table.insert(ll, line_text)
   end
@@ -259,7 +287,7 @@ function D:draw()
           hl_group = seg.hl,
         })
       end
-      col = col + #seg.str
+      col = col + (seg.str and #seg.str or 0)
     end
   end
 
