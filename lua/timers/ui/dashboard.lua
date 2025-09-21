@@ -182,8 +182,18 @@ function D:draw()
 
   local big_timer_segment = {}
   if #timers > 0 then
-    local big_timer = fonts.from_duration(timers[1].t:expire_in(), config.dashboard.font)
-    big_timer_segment = into_segments(big_timer, "Statement")
+    local closest_timer ---@type Timer
+    for _, tbl in pairs(timers) do
+      if not tbl.t.paused_at then
+        closest_timer = tbl.t
+        break
+      end
+    end
+
+    if closest_timer then
+      local big_timer = fonts.from_duration(closest_timer:expire_in(), config.dashboard.font)
+      big_timer_segment = into_segments(big_timer, "Statement")
+    end
   end
 
   local timers_segment = self.make_timer_segments(timers)
