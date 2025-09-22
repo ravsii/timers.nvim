@@ -40,7 +40,6 @@ providing a clean API for other plugins or custom configurations.
       - [Pomodoro 25-5 timer](#pomodoro-25-5-timer)
       - [Infinite timer](#infinite-timer)
       - [Closest timer for lualine](#closest-timer-for-lualine)
-  - [Known bugs](#known-bugs)
   - [TODO](#todo)
 <!--toc:end-->
 
