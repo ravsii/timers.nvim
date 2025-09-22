@@ -325,7 +325,6 @@ If you like command-style  (`<cmd>TimersDashboard<cr>`) binds more,  see: [comma
 mainly serves as a proof of concept.
 <img width="2416" height="1324" alt="image" src="https://github.com/user-attachments/assets/397bdf89-d52c-4ed8-a629-0f7ea5b15d88" />
 
-
 > [!NOTE]
 >
 > All these commands have a lua equivalent, that could be found using
@@ -542,12 +541,6 @@ You can display the closest timer to expire in
 }
 ```
 
-## Known bugs
-
-1. **** Cancel (c) keybind is currently not perfectly synced with the
-   dashboard ui, so it could potentially cancel a different timer. Use
-`:TimersCancel` instead.
-
 ## TODO
 
 - [x] Picker integrations
@@ -558,9 +551,8 @@ You can display the closest timer to expire in
 - [ ] Dashboard
   - [ ] "... and X more" for the
   - [ ] Limit the amount of timers showing on dashboard
-  - [ ] Better sync between actions and UI (see [known bugs](#known-bugs))
-  - [ ] Pause / Resume actions
   - [ ] Better UI for available actions
 - [ ] Prelude-like import, because it's almost always required to import 4
   modules just to create and start a timer.
 - [ ] More unit-tests, where possible
+- [ ] Make "No Active Timers" centered.
