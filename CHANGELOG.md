@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.1](https://github.com/ravsii/timers.nvim/compare/v0.4.0...v0.4.1) (2025-09-22)
+
+
+### Bug Fixes
+
+* **dashboard:** "No active timers" is now "sort of" centered ([06cdd21](https://github.com/ravsii/timers.nvim/commit/06cdd21fe7161bb6143c3c3bee25a2f7d3ee5f77))
+* **dashboard:** "No active timers" is now "sort of" centered ([1744fa7](https://github.com/ravsii/timers.nvim/commit/1744fa7b660219c93fd8783612f57ef05003be9e))
+
 ## [0.4.0](https://github.com/ravsii/timers.nvim/compare/v0.3.2...v0.4.0) (2025-09-21)
 
 
