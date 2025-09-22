@@ -233,10 +233,11 @@ function D:draw()
       end
     end
   else
-    table.insert(content, { {
-      str = "No active timers",
-      hl = "Comment",
-    } })
+    local no_active_line = { { str = "No Active Timers", hl = "Comment" } } ---@type Segments
+    local lw = line_width(no_active_line)
+    local left_padding_chars = string.rep(" ", math.floor((w - lw) / 2))
+    table.insert(no_active_line, 1, { str = left_padding_chars })
+    table.insert(content, no_active_line)
   end
 
   for _, line in pairs(binds_segment) do
