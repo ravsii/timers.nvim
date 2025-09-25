@@ -1,0 +1,65 @@
+---@class Config
+---@field persistent? boolean Save state across Neovim reloads.
+---@field default_timer? TimerOpts Default values for new timers.
+---@field dashboard? DashboardOpts
+---@field debug? boolean Enables debug logging to {data}/timers.nvim/debug.log
+
+---Represents a unique timer id, that manager can work with.
+---@alias TimerID integer
+---@alias TimersTable table<TimerID, Timer>
+
+---Represents a time returned by os.time() in seconds.
+---@alias time integer
+
+---@class DashboardOpts
+---Interval (in milliseconds) at which the dashboard state is updated.
+---@field update_interval? integer
+---[0,1] for percentage of the screen, (1,∞) for an absolute value.
+---@field width? number
+---[0,1] for percentage of the screen, (1,∞) for an absolute value.
+---@field height? number
+---Font to use. Available values: DiamFont, Terrace, tmplr.
+---Or, you can provide a custom font using "fonts" field and use its name.
+---@field font? "DiamFont"|"Terrace"|"tmplr"|string
+---@field fonts? FontTable
+
+---@alias FontTable table<string, Font>
+---@alias Font {
+---  padding?: number,
+---  ["s"]: string[],
+---  [":"]: string[],
+---  ["0"]: string[],
+---  ["1"]: string[],
+---  ["2"]: string[],
+---  ["3"]: string[],
+---  ["4"]: string[],
+---  ["5"]: string[],
+---  ["6"]: string[],
+---  ["7"]: string[],
+---  ["8"]: string[],
+---  ["9"]: string[],
+---}
+
+---@class TimerOpts
+---Message that shows up on timer finish.
+---No effect, if on_start is passed.
+---@field message? string
+---Icon that will be passed to nvim.notify, false to disable.
+---@field icon? string | boolean
+---@field title? string
+---@field log_level? vim.log.levels
+---Can be used to replace the default callback
+---@field on_start? fun(t: Timer, timer_id: integer)
+---Can be used to replace the default callback
+---@field on_finish? fun(t: Timer, timer_id: integer)
+
+---@class Timer:TimerOpts
+---When the timer was created. "Created" here means when :new() was called, not
+---when manager.start_timer() was called.
+---@field created_at time
+---When the timer was started, using manager.start_timer().
+---@field started_at time?
+---When the timer was paused. If it's not nil, then the timer is currently
+---paused.
+---@field paused_at time?
+---@field duration Duration

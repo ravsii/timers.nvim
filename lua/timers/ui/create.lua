@@ -9,15 +9,15 @@ local F = {
   namespace = vim.api.nvim_create_namespace("timers.nvim/create"),
 }
 
----@alias fields field[]
----@alias field {
+---@alias Fields Field[]
+---@alias Field {
 ---   title: string,
 ---   required:boolean?,
 ---   placeholder: string,
 ---   line: integer?,
 --- }
 
----@type fields
+---@type Fields
 local base_fields = {
   { title = "󱎫 Duration", required = true, placeholder = "1500, 3s, 2.5m, 1h2m3s" },
   { title = "󰗴 Title", placeholder = config.default_timer.title },
@@ -65,7 +65,7 @@ function F:create_timer()
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, buf_lines)
 
   -- Only these lines are editable
-  local fields = vim.tbl_deep_extend("force", {}, base_fields) ---@type fields
+  local fields = vim.tbl_deep_extend("force", {}, base_fields) ---@type Fields
   for i in ipairs(fields) do
     fields[i].line = i
   end

@@ -6,12 +6,8 @@ local unit = require("timers.unit")
 local state_file = vim.fn.stdpath("data") .. "/timers.nvim/timers.json"
 local state_chmod = 420 -- 644
 
----Represents a unique timer id, that manager can work with.
----@alias TimerID integer
----@alias TimersTable table<TimerID, Timer>
-
----@alias InternalTable table<integer, InternalTableItem>
----@alias InternalTableItem { timer: Timer, _uv: uv.uv_timer_t, }
+---@alias ManagerTable table<integer, ManagerTableItem>
+---@alias ManagerTableItem { timer: Timer, _uv: uv.uv_timer_t, }
 
 ---@class Manager
 local M = _G.__TIMERS_MANAGER
@@ -19,7 +15,7 @@ if not M then
   M = {
     ---Stores all active timers in a k-v pairs.
     ---@private
-    ---@type InternalTable
+    ---@type ManagerTable
     active_timers = {},
 
     ---Provides IDs for timers, so that they can be easily identified. It's
@@ -73,7 +69,7 @@ function M.start_timer(t)
 
   t.started_at = os.time()
   t.paused_at = nil
-  local table_item = { timer = t, _uv = uv_timer } ---@type InternalTableItem
+  local table_item = { timer = t, _uv = uv_timer } ---@type ManagerTableItem
   M.active_timers[id] = table_item
   M.save_state()
 

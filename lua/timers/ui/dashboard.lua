@@ -8,18 +8,6 @@ local utils = require("timers.ui.utils")
 ---@alias Segments Segment[]
 ---@alias Segment {str: string, hl:string}
 
----@class DashboardOpts
----Interval (in milliseconds) at which the dashboard state is updated.
----@field update_interval? integer
----[0,1] for percentage of the screen, (1,∞) for an absolute value.
----@field width? number
----[0,1] for percentage of the screen, (1,∞) for an absolute value.
----@field height? number
----Font to use. Available values: DiamFont, Terrace, tmplr.
----Or, you can provide a custom font using "fonts" field and use its name.
----@field font? "DiamFont"|"Terrace"|"tmplr"|string
----@field fonts? FontTable
-
 local augroup = vim.api.nvim_create_augroup("timers.nvim/dashboard", { clear = true })
 local namespace = vim.api.nvim_create_namespace("timers.nvim/dashboard")
 

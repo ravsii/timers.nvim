@@ -2,32 +2,7 @@ local config = require("timers.config")
 local duration = require("timers.duration")
 local unit = require("timers.unit")
 
----Represents a time returned by os.time() in seconds.
----@alias time integer
-
----@class TimerOpts
----Message that shows up on timer finish.
----No effect, if on_start is passed.
----@field message? string
----Icon that will be passed to nvim.notify, false to disable.
----@field icon? string | boolean
----@field title? string
----@field log_level? vim.log.levels
----Can be used to replace the default callback
----@field on_start? fun(t: Timer, timer_id: integer)
----Can be used to replace the default callback
----@field on_finish? fun(t: Timer, timer_id: integer)
-
----@class Timer:TimerOpts
----When the timer was created. "Created" here means when :new() was called, not
----when manager.start_timer() was called.
----@field created_at time
----When the timer was started, using manager.start_timer().
----@field started_at time?
----When the timer was paused. If it's not nil, then the timer is currently
----paused.
----@field paused_at time?
----@field duration Duration
+---@class Timer
 local T = {}
 T.__index = T
 

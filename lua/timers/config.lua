@@ -1,8 +1,4 @@
 ---@class Config
----@field persistent? boolean Save state across Neovim reloads.
----@field default_timer? TimerOpts Default values for new timers.
----@field dashboard? DashboardOpts
----@field debug? boolean Enables debug logging to {data}/timers.nvim/debug.log
 local M = {}
 
 ---@type Config
@@ -21,7 +17,6 @@ local defaults = {
     font = "DiamFont",
     fonts = {},
   },
-  debug = false,
 }
 
 ---@param opts Config
