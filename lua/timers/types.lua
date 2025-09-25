@@ -1,4 +1,4 @@
----@class Config
+---@class Config Config
 ---@field persistent? boolean Save state across Neovim reloads.
 ---@field default_timer? TimerOpts Default values for new timers.
 ---@field dashboard? DashboardOpts
