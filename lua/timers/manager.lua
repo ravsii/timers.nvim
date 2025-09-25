@@ -1,5 +1,4 @@
 local config = require("timers.config")
-local debug = require("timers.debug")
 local duration = require("timers.duration")
 local timer = require("timers.timer")
 local unit = require("timers.unit")
@@ -77,9 +76,6 @@ function M.start_timer(t)
   local table_item = { timer = t, _uv = uv_timer } ---@type InternalTableItem
   M.active_timers[id] = table_item
   M.save_state()
-
-  debug.log("new timer added " .. vim.inspect(t))
-  debug.log("state after creation " .. vim.inspect(M.active_timers))
 
   if t.on_start then
     t.on_start(t, id)
