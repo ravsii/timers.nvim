@@ -110,7 +110,7 @@ function F:create_timer()
       local lnum = fields[current_field].line
 
       if pos[1] + 1 ~= lnum then
-        local new_pos = vim.api.nvim_win_set_cursor(win, { lnum + 1, pos[2] })
+        vim.api.nvim_win_set_cursor(win, { lnum + 1, pos[2] })
       end
     end,
   })
