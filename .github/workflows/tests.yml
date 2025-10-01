@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: MunifTanjim/setup-neovim-action@v1
+      - run: |
+          nvim --version
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libreadline-dev
       - name: Test Cache
