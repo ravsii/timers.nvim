@@ -31,10 +31,10 @@ end
 ---@return Duration result
 function Duration:sub(sub)
   local val
-  if type(sub) == "Duration" then
-    val = self.value - sub.value
-  else
+  if type(sub) == "number" then
     val = self.value - sub
+  else
+    val = self.value - sub.value
   end
 
   return Duration.from(math.max(val, 0))
