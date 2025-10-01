@@ -4,10 +4,6 @@ return {
     lpath = "lua/?.lua;lua/?/init.lua",
     lua = "nlua",
   },
-  default = {
-    verbose = true,
-  },
-  tests = {
-    verbose = true,
-  },
+  default = { verbose = true },
+  tests = { verbose = true },
 }

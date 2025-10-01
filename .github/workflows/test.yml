@@ -1,0 +1,23 @@
+on:
+  push:
+    branches:
+      - "*"
+
+name: test
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: folke/github/neovim@main
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y libreadline-dev
+      - name: Test Cache
+        uses: actions/cache@v4
+        with:
+          path: .tests
+          key: ${{ runner.os }}-tests-${{ hashFiles('tests/busted.lua') }}
+      - name: Run Tests
+        run: make test
