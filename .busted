@@ -1,9 +1,0 @@
-return {
-  _all = {
-    coverage = true,
-    lpath = "lua/?.lua;lua/?/init.lua",
-    lua = "nlua",
-  },
-  default = { verbose = true },
-  tests = { verbose = true },
-}
