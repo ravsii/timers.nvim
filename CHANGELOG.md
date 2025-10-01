@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2](https://github.com/ravsii/timers.nvim/compare/v0.4.1...v0.4.2) (2025-10-01)
+
+
+### Bug Fixes
+
+* duration sub ([8a449b1](https://github.com/ravsii/timers.nvim/commit/8a449b1af1f179077b6385d225013fb0f7c72afc))
+* duration sub ([a87216e](https://github.com/ravsii/timers.nvim/commit/a87216e5da5e4e4fac40fd44240422e9561fb484))
+
 ## [0.4.1](https://github.com/ravsii/timers.nvim/compare/v0.4.0...v0.4.1) (2025-09-22)
 
 
