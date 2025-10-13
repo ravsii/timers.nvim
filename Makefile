@@ -1,3 +1,3 @@
 .PHONY: test
 test:
-	nvim -l ./tests/busted.lua --minitest
+	luarocks test --lua-version 5.1 --local

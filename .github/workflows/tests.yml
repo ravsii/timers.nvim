@@ -1,25 +1,22 @@
+---
+name: Run tests
 on:
+  pull_request: ~
   push:
     branches:
       - "*"
 
-name: test
-
 jobs:
-  tests:
+  build:
+    name: Run tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    strategy:
+      matrix:
+        neovim_version: ["nightly"]
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: MunifTanjim/setup-neovim-action@v1
-      - run: |
-          nvim --version
-      - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y libreadline-dev
-      - name: Test Cache
-        uses: actions/cache@v4
+      - uses: actions/checkout@v3
+      - name: Run tests
+        uses: nvim-neorocks/nvim-busted-action@v1
         with:
-          path: .tests
-          key: ${{ runner.os }}-tests-${{ hashFiles('tests/busted.lua') }}
-      - name: Run Tests
-        run: make test
+          nvim_version: ${{ matrix.neovim_version }}
