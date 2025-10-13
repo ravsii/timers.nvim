@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.3](https://github.com/ravsii/timers.nvim/compare/v0.4.2...v0.4.3) (2025-10-13)
+
+
+### Bug Fixes
+
+* busted, add new test workflow ([c546fc1](https://github.com/ravsii/timers.nvim/commit/c546fc13e19e1845a65d7df68068fead52fc0150))
+* move tests to lazy, add CI ([63a1984](https://github.com/ravsii/timers.nvim/commit/63a19846ec6ef0f9e86bce9a00c9f9abdf3cfb09))
+
 ## [0.4.2](https://github.com/ravsii/timers.nvim/compare/v0.4.1...v0.4.2) (2025-10-01)
 
 
