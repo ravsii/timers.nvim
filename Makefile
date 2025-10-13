@@ -1,7 +1,3 @@
-.PHONY: deps
-deps:
-	luarocks install busted
-
 .PHONY: test
 test:
-	busted --lua=lua spec
+	luarocks test --lua-version 5.1 --local

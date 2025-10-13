@@ -40,3 +40,5 @@ luac.out
 *.hex
 
 .DS_Store
+.tests
+lua_modules
